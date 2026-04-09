@@ -1,0 +1,2894 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Lunar</title>
+<link id="favicon" rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='26' fill='none' stroke='%23334155' stroke-width='6'/></svg>">
+<meta name="referrer" content="no-referrer">
+<style>
+:root {
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-2: #f1f3f5;
+  --border: #e1e4e8;
+  --border-strong: #cbd0d6;
+  --text: #17191c;
+  --text-dim: #5a6270;
+  --text-mute: #8b93a1;
+  --accent: #3b6b7a;
+  --accent-soft: #e4edf0;
+  --flow-none: transparent;
+  --flow-spot: #f5d3cf;
+  --flow-light: #e49a8f;
+  --flow-medium: #c66554;
+  --flow-heavy: #8f3726;
+  --warn: #8a3a22;
+  --danger: #9a1a1a;
+  --radius: 10px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1113;
+    --surface: #17191c;
+    --surface-2: #1d2024;
+    --border: #2a2e34;
+    --border-strong: #3a3f47;
+    --text: #e6e8eb;
+    --text-dim: #a0a7b1;
+    --text-mute: #6b7280;
+    --accent: #7fb3c2;
+    --accent-soft: #1f2a2e;
+    --flow-spot: #4a2e2b;
+    --flow-light: #7a4338;
+    --flow-medium: #a94e3c;
+    --flow-heavy: #d06a54;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+body { min-height: 100vh; min-height: 100dvh; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 10px 14px; color: var(--text); }
+button:hover { border-color: var(--text-dim); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+button.primary:hover { filter: brightness(1.05); }
+button.danger { color: var(--danger); border-color: var(--danger); }
+button.ghost { border-color: transparent; }
+input[type="text"], input[type="password"], input[type="date"], textarea, select {
+  width: 100%; background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--radius); padding: 10px 12px;
+}
+textarea { resize: vertical; min-height: 80px; }
+label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 6px; }
+h1, h2, h3 { font-weight: 600; line-height: 1.2; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 17px; margin: 24px 0 8px; }
+h3 { font-size: 14px; margin: 16px 0 6px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+p { margin: 0 0 12px; }
+.muted { color: var(--text-dim); }
+.mute-small { color: var(--text-mute); font-size: 13px; }
+.warn { color: var(--warn); }
+.danger { color: var(--danger); }
+hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+/* Layout */
+.app { max-width: 560px; margin: 0 auto; padding: 20px 18px 96px; }
+header.top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+header.top .sub { color: var(--text-mute); font-size: 13px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin: 12px 0; }
+.card.tight { padding: 12px 14px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.row.between { justify-content: space-between; align-items: center; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--border-strong); border-radius: 999px; padding: 6px 12px; background: var(--surface); font-size: 13px; cursor: pointer; }
+.chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chip.flow-spot.active { background: var(--flow-spot); color: var(--text); border-color: var(--flow-spot); }
+.chip.flow-light.active { background: var(--flow-light); color: #fff; border-color: var(--flow-light); }
+.chip.flow-medium.active { background: var(--flow-medium); color: #fff; border-color: var(--flow-medium); }
+.chip.flow-heavy.active { background: var(--flow-heavy); color: #fff; border-color: var(--flow-heavy); }
+
+/* Bottom nav */
+nav.bottom {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: var(--surface); border-top: 1px solid var(--border);
+  display: flex; padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  z-index: 10;
+}
+nav.bottom button {
+  flex: 1; border: none; background: none; padding: 8px 4px; font-size: 12px; color: var(--text-dim); border-radius: 0;
+}
+nav.bottom button.active { color: var(--accent); }
+nav.bottom button svg { display: block; margin: 0 auto 2px; width: 22px; height: 22px; }
+
+/* Calendar */
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 10px; }
+.cal-header button { padding: 6px 10px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-dow { text-align: center; font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 0; }
+.cal-cell {
+  aspect-ratio: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; position: relative; cursor: pointer; user-select: none;
+}
+.cal-cell.other { color: var(--text-mute); background: transparent; border-color: transparent; }
+.cal-cell.today { border-color: var(--accent); border-width: 2px; font-weight: 600; }
+.cal-cell.pred { border-style: dashed; border-color: var(--flow-medium); }
+.cal-cell.fertile { background: var(--accent-soft); }
+.cal-cell.flow-spotting { background: var(--flow-spot); }
+.cal-cell.flow-light { background: var(--flow-light); color: #fff; }
+.cal-cell.flow-medium { background: var(--flow-medium); color: #fff; }
+.cal-cell.flow-heavy { background: var(--flow-heavy); color: #fff; }
+.cal-cell .dot { position: absolute; bottom: 3px; right: 4px; font-size: 9px; opacity: 0.7; }
+
+/* First run */
+.firstrun { max-width: 540px; margin: 0 auto; padding: 24px 20px; }
+.firstrun h1 { font-size: 26px; margin-bottom: 10px; }
+.firstrun .block { margin: 18px 0; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.firstrun .warn-block { border-color: var(--warn); background: var(--accent-soft); }
+.firstrun .btnrow { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+.firstrun .btnrow button { width: 100%; padding: 14px; }
+
+/* Unlock */
+.unlock { max-width: 420px; margin: 60px auto; padding: 20px; text-align: center; }
+.unlock input { text-align: center; letter-spacing: 0.05em; margin: 12px 0; }
+.unlock .hint { color: var(--text-mute); font-size: 13px; margin-top: 10px; }
+
+/* Stats */
+.stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-row .v { font-variant-numeric: tabular-nums; color: var(--text); font-weight: 500; }
+canvas.chart { width: 100%; height: 120px; display: block; }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 20px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto;
+}
+
+/* Disclaimer banner */
+.disclaimer { font-size: 12px; color: var(--text-mute); padding: 8px 0; font-style: italic; }
+
+/* Hide class */
+.hidden { display: none !important; }
+
+/* Toast */
+.toast {
+  position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%);
+  background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 8px;
+  font-size: 14px; z-index: 200; opacity: 0; transition: opacity 0.2s;
+  pointer-events: none; max-width: 90%; text-align: center;
+}
+.toast.show { opacity: 0.95; }
+
+/* Delete confirm input */
+.confirm-type { font-family: var(--mono); letter-spacing: 0.1em; }
+
+/* Import preview */
+.diff-table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 10px; }
+.diff-table th, .diff-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.diff-table th { color: var(--text-dim); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+.diff-counts { display: flex; gap: 12px; font-size: 13px; margin: 8px 0; }
+.diff-counts .k { color: var(--text-dim); }
+.diff-counts .v { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* High-contrast theme */
+body.theme-hc {
+  --bg: #000;
+  --surface: #000;
+  --surface-2: #000;
+  --border: #fff;
+  --border-strong: #fff;
+  --text: #fff;
+  --text-dim: #fff;
+  --text-mute: #ccc;
+  --accent: #ffff00;
+  --accent-soft: #111;
+  --flow-spot: #660033;
+  --flow-light: #aa3355;
+  --flow-medium: #dd3333;
+  --flow-heavy: #ff5500;
+}
+body.theme-hc .card, body.theme-hc .firstrun .block { border-width: 2px; }
+body.theme-hc button { border-width: 2px; }
+
+/* Quick-hide blur overlay */
+#hideOverlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+#hideOverlay .badge {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 2px solid var(--border-strong);
+}
+#hideOverlay .msg { color: var(--text-dim); font-size: 14px; }
+
+/* Print view */
+#printRoot { display: none; }
+@media print {
+  body * { visibility: hidden; }
+  #printRoot, #printRoot * { visibility: visible; }
+  #printRoot { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 20px 24px; font-family: var(--sans); color: #000; }
+  #printRoot h1 { font-size: 22px; margin: 0 0 4px; }
+  #printRoot h2 { font-size: 15px; margin: 16px 0 6px; }
+  #printRoot table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  #printRoot th, #printRoot td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #ccc; }
+  #printRoot .muted { color: #555; font-size: 11px; }
+  #printRoot .disclaimer { margin-top: 20px; font-size: 10px; font-style: italic; color: #555; }
+  nav.bottom, .app { display: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="printRoot"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+// ============================================================================
+// Lunar — browser-native menstrual cycle tracker
+// Single-file. Local-only. Zero network after first load.
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Crypto layer — PBKDF2-SHA256 250k iters, AES-GCM 256, random salt+IV per write
+// ---------------------------------------------------------------------------
+const CRYPTO = {
+  ITERATIONS: 250_000,
+  SALT_LEN: 16,
+  IV_LEN: 12,
+  NO_PASS_CONSTANT: 'lunar-no-passphrase-v1', // obfuscation only, not security
+
+  async deriveKey(passphrase, salt) {
+    const keyMat = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(passphrase),
+      'PBKDF2', false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: this.ITERATIONS, hash: 'SHA-256' },
+      keyMat,
+      { name: 'AES-GCM', length: 256 },
+      false, ['encrypt', 'decrypt']
+    );
+  },
+
+  async encrypt(key, plaintext) {
+    const iv = crypto.getRandomValues(new Uint8Array(this.IV_LEN));
+    const data = new TextEncoder().encode(plaintext);
+    const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+    return { iv, ciphertext: new Uint8Array(cipher) };
+  },
+
+  async decrypt(key, iv, ciphertext) {
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+    return new TextDecoder().decode(plain);
+  },
+
+  randomSalt() { return crypto.getRandomValues(new Uint8Array(this.SALT_LEN)); },
+};
+
+// ---------------------------------------------------------------------------
+// i18n — locales baked in; English is the only one shipping in v1.
+// Adding a language = add another LOCALES.xx block with matching keys (and
+// optionally a .defaults block for symptoms/moods/activities) and register it
+// in LOCALE_META below. No other code changes required.
+// ---------------------------------------------------------------------------
+const LOCALES = {
+  en: {
+    meta: { name: 'English', rtl: false },
+    defaults: {
+      symptoms: ['cramps','headache','back pain','bloating','breast tenderness','fatigue','nausea','acne','insomnia','dizziness'],
+      moods: ['calm','happy','anxious','irritable','sad','energetic','low','focused'],
+      activities: ['exercise','sex (protected)','sex (unprotected)','good sleep','poor sleep'],
+      dow: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    },
+    app: {
+      title: 'Lunar',
+      tagline: 'A period and cycle tracker that runs only on this device.',
+    },
+    firstrun: {
+      does_title: 'What this app does',
+      does_body: 'It stores the days you log, predicts your next period from your own past cycles, and shows you patterns in your symptoms and moods.',
+      doesnot_title: 'What this app does not do',
+      doesnot_body: 'It does not send your data anywhere. No account. No server. No analytics. No company database holds your cycle data, because there is no company database. If someone asks us for your data, there is nothing to give them.',
+      tradeoff_title: 'The tradeoff',
+      tradeoff_body: 'Because your data is only on this device, it is your responsibility to keep it. If you clear your browser, lose your phone, or forget your passphrase, the data is gone. Lunar includes encrypted export so you can back it up yourself.',
+      pass_title: 'Passphrase',
+      pass_body: 'We strongly recommend setting one. It encrypts your data so that anyone with access to this device — a partner, a parent, a border agent, a repair technician — cannot read it without the passphrase. If you forget it, the data cannot be recovered. Not by you, not by us, not by anyone.',
+      pass_placeholder: 'Choose a passphrase (6+ characters)',
+      pass_confirm: 'Confirm passphrase',
+      pass_hint: 'Optional hint (stored unencrypted)',
+      notmedical_title: 'Lunar is not a medical device',
+      notmedical_body: 'It is a personal tracking tool. Predictions are estimates from your own past data. For health concerns, talk to a qualified healthcare provider.',
+      err_short: 'Use at least 6 characters.',
+      err_mismatch: 'Passphrases do not match.',
+      btn_setpass: 'Set a passphrase and start',
+      btn_import: 'Import from another app',
+      btn_nopass: 'Start without a passphrase',
+      nopass_confirm: 'Continue without a passphrase? Anyone with this device will be able to read your data.',
+      import_ready: 'Ready to import {n} days from {source}. Finish setup to apply.',
+    },
+    unlock: {
+      prompt: 'Enter your passphrase to unlock.',
+      placeholder: 'Passphrase',
+      btn: 'Unlock',
+      err: 'Incorrect passphrase',
+      hint_prefix: 'Hint: {hint}',
+      restore: 'Restore from backup',
+      restore_confirm: 'Restore from a Lunar encrypted backup? This replaces any data on this device.',
+    },
+    nav: { today: 'Today', calendar: 'Calendar', stats: 'Stats', settings: 'Settings' },
+    header: { cycle_day: 'Cycle day {n} · {date}' },
+    today: {
+      prediction: 'Prediction',
+      cold_start_empty: 'Log your period days to begin tracking. Predictions appear after your second cycle.',
+      cold_start_partial: 'Keep logging. Predictions appear after your second cycle.',
+      pred_between: 'Next period expected between {start} and {end}.',
+      in_window: 'Your period is expected this week (window {start}–{end}).',
+      late: 'Your period is about {n} days later than expected.',
+      late_one: 'Your period is about {n} day later than expected.',
+      late_sub: 'Based on your past cycles, a period starting around {expected} was expected. Cycles vary — stress, illness, travel, or recent changes in routine can shift them.',
+      stale: 'It has been a long time since you last logged a period. Import recent history or log a new cycle to get fresh predictions.',
+      ovulation: 'Estimated ovulation around {date} — a rough average, not a measurement. Fertile window {start}–{end}.',
+      title: 'Today',
+    },
+    day: {
+      flow: 'Flow',
+      symptoms: 'Symptoms',
+      mood: 'Mood',
+      activities: 'Activities',
+      notes: 'Notes',
+      notes_placeholder: 'Optional notes for this day.',
+      saved: 'Saved',
+      back: '‹ Back',
+      clear: 'Clear this day',
+      cleared: 'Day cleared',
+    },
+    flow: { none: 'None', spotting: 'Spotting', light: 'Light', medium: 'Medium', heavy: 'Heavy' },
+    cal: {
+      legend: 'Filled cells = logged flow (spotting → heavy in deepening color). Dashed outline = predicted next period window. Shaded = estimated fertile window. Ringed = today.',
+      prev: 'Previous month',
+      next: 'Next month',
+    },
+    stats: {
+      summary: 'Summary',
+      no_data: 'Not enough data yet. Log at least one complete cycle to see statistics.',
+      cycles_recorded: 'Cycles recorded',
+      full_cycles: 'Full cycles analysed',
+      avg_cycle: 'Average cycle length',
+      shortest: 'Shortest',
+      longest: 'Longest',
+      avg_period: 'Average period length',
+      cycle_length: 'Cycle length',
+      top_symptoms: 'Most logged symptoms',
+      days: '{n} days',
+      days_one: '{n} day',
+      note: 'These are simple summaries of your own logs. Not medical advice.',
+      patterns: 'Patterns before period',
+      patterns_intro: 'Things you logged in the few days leading up to your last {denom} periods.',
+      pattern_row: '{name} — {count} of {denom} cycles',
+      patterns_none: 'No repeating patterns yet. Keep logging and they will appear here.',
+    },
+    settings: {
+      passphrase: 'Passphrase',
+      pass_with: 'Your data is encrypted with your passphrase. If you forget it, the data cannot be recovered.',
+      pass_without: 'You have no passphrase. Anyone with this device can open the app and read your data.',
+      pass_change: 'Change passphrase',
+      pass_set: 'Set a passphrase',
+      tabtitle: 'Tab title',
+      tabtitle_help: 'Shown in the browser tab. Pick something neutral if you share this device.',
+      session: 'Session',
+      lock_now: 'Lock now',
+      import_title: 'Import from another app',
+      import_help: 'Import your history from Apple Health, Flo, or Clue. Files are parsed on this device — nothing is uploaded. Existing entries are preserved on conflict unless you choose to overwrite.',
+      import_btn: 'Import…',
+      backup: 'Backup & export',
+      backup_help: 'The encrypted export contains your data as ciphertext. Restore it with the same passphrase. The plaintext export is readable and should be treated like a diary.',
+      backup_enc: 'Download encrypted backup',
+      backup_restore: 'Restore encrypted backup',
+      backup_plain: 'Export as plaintext JSON',
+      print_title: 'Printable clinician summary',
+      print_help: 'Generates a one-page summary of your cycle history and symptom frequency, rendered locally and sent to your browser\u2019s print dialog. Save it as PDF from there.',
+      print_btn: 'Print summary',
+      delete_title: 'Delete all data',
+      delete_help: 'This wipes every day, cycle, and setting from this device. It cannot be undone.',
+      delete_btn: 'Delete all data',
+      language: 'Language',
+      language_note: 'Only English is available in this version. More languages are planned.',
+      theme: 'Theme',
+      theme_default: 'Default',
+      theme_hc: 'High contrast',
+      prediction: 'Prediction model',
+      prediction_help: 'Moving average is simple and stable. Bayesian combines your data with a population prior — pulls toward a typical cycle when your history is short, converges to your own pattern as you log more.',
+      prediction_movavg: 'Moving average (default)',
+      prediction_bayes: 'Bayesian (stretch)',
+      quickhide: 'Privacy',
+      quickhide_help: 'Press Escape or long-press the screen to blur everything instantly. Tap the overlay to restore.',
+      reminders: 'Reminders',
+      reminders_help: 'Local-only notifications while Lunar is open in a tab. No background wake, no push server.',
+      reminder_period: 'Remind me before my next expected period',
+      reminder_log: 'Remind me to log today',
+      reminder_lead: 'Lead days',
+      reminder_perm_denied: 'Notifications are blocked by the browser. Enable them in site settings first.',
+      about: 'About',
+      about_body: 'Lunar runs only on this device. No account, no server, no analytics. Part of the NakliTechie local-first series.',
+      disclaimer: 'Lunar is not a medical device. It is a personal tracking tool. Predictions are estimates from your own past data. For health concerns, talk to a qualified healthcare provider.',
+    },
+    modal: { cancel: 'Cancel', save: 'Save', close: 'Close' },
+    pass_modal: {
+      title_change: 'Change passphrase',
+      title_set: 'Set passphrase',
+      warn: 'If you forget your passphrase, your data cannot be recovered.',
+      new: 'New passphrase',
+      confirm: 'Confirm new passphrase',
+      hint: 'Optional hint (stored unencrypted)',
+      err_mismatch: 'Passphrases do not match.',
+      err_short: 'Use at least 6 characters, or leave blank for no passphrase.',
+      updated: 'Passphrase updated',
+    },
+    delete_modal: {
+      title: 'Delete all data',
+      body: 'This wipes every day, cycle, and setting on this device. It cannot be undone.',
+      type_hint: 'Type DELETE to confirm.',
+      confirm: 'Delete everything',
+    },
+    export: {
+      plain_title: 'Plaintext export',
+      plain_body: 'This file will contain your cycle data in readable form. Do not store it anywhere you would not store a diary.',
+      plain_btn: 'I understand, download',
+    },
+    print: {
+      title: 'Cycle summary',
+      history: 'Cycle history',
+    },
+    reference: {
+      title: 'Reference',
+      intro: 'Brief, factual notes about menstrual cycles. Written in plain language, not medical advice. For anything you are worried about, talk to a qualified healthcare provider.',
+      sections: [
+        {
+          heading: 'What a cycle is',
+          body: 'A menstrual cycle is the set of changes that happen roughly each month from one period to the next. Day 1 of a cycle is the first day of flow. The most common length is around 21 to 35 days, but variation between people is normal, and variation between your own cycles is also normal. Lunar counts each cycle from the day flow begins and predicts the next start from your own pattern.',
+        },
+        {
+          heading: 'Period vs. cycle',
+          body: 'The period is the days of bleeding, usually 2 to 7 days. The cycle is the full length from one period start to the next. When Lunar says "cycle day 14," it means it has been 14 days since your most recent period began — not since the period ended.',
+        },
+        {
+          heading: 'Ovulation and the fertile window',
+          body: 'Ovulation is a single day, around 12 to 16 days before your next period starts. The days when pregnancy is most possible are roughly the 5 days before ovulation plus the day of ovulation itself. Lunar estimates ovulation as next-period minus 14. This is an average, not a measurement — actual ovulation varies. Do not use the fertile window as a contraceptive method.',
+        },
+        {
+          heading: 'What "irregular" means',
+          body: 'A cycle is considered regular when most of your cycles fall within about 7 days of each other. Occasional variation of a few days is normal. Big swings, skipped periods for months at a time, or sudden changes from your own baseline are worth discussing with a clinician.',
+        },
+        {
+          heading: 'Symptoms around period',
+          body: 'Cramps, headaches, bloating, sore breasts, mood changes, tiredness, and acne are all common. Pain that stops you functioning, extremely heavy flow (soaking through protection every 1 to 2 hours), bleeding between periods, or bleeding after sex are reasons to see a provider.',
+        },
+        {
+          heading: 'When to see a provider',
+          body: 'A cycle shorter than 21 days or longer than 35 days consistently; periods lasting more than 7 days; severe pain; sudden changes from your baseline; missed periods that are not explained by a known cause; unusual bleeding. If you are pregnant, trying to become pregnant, or have just stopped hormonal contraception, talk to a clinician about what to expect.',
+        },
+        {
+          heading: 'Hormonal contraception',
+          body: 'Some forms of hormonal contraception suppress or change bleeding patterns. If you are on combined pills, the bleeding on the "off" week is a withdrawal bleed, not a true period. Progestin-only methods often cause irregular bleeding or no bleeding at all. Lunar tracks what you log; it does not know you are on contraception unless you tell it.',
+        },
+        {
+          heading: 'Perimenopause',
+          body: 'In the years leading up to menopause, cycles often become less predictable. Lengths may vary widely, flow may change, and skipped months are common. Lunar\u2019s predictions become less useful during this period because the assumption of a stable mean breaks down.',
+        },
+        {
+          heading: 'Trans and non-binary users',
+          body: 'Testosterone typically stops menstruation within a few months, though it can return if a dose is missed. Lunar is deliberately gender-neutral. If you are tracking because bleeding has restarted or never fully stopped, log what you observe and bring that log to a provider.',
+        },
+        {
+          heading: 'A note on prediction accuracy',
+          body: 'Lunar predicts from your own past cycles. Stress, illness, travel, hormonal changes, diet, and sleep can all shift a cycle. Predictions are estimates with a window, not a single date. Treat them as a heads-up, not a guarantee.',
+        },
+      ],
+    },
+    decoy: {
+      title: 'Decoy vault',
+      help: 'A decoy vault is a second hidden vault on this device, unlocked by a different passphrase. Log whatever you want there. If someone forces you to unlock Lunar, you can give them the decoy passphrase and they will see only the decoy data. From the outside, there is no way to tell which passphrase belongs to which vault. This is plausible deniability, not perfect secrecy.',
+      warning: 'Understand the tradeoffs. If you forget the decoy passphrase, the decoy data is gone. If you forget which passphrase is which, both may become harder to recover. Test the decoy after setting it up.',
+      status_off: 'Decoy: not set',
+      status_on: 'Decoy: configured',
+      set_btn: 'Set up decoy vault',
+      reset_btn: 'Reset decoy vault',
+      remove_btn: 'Remove decoy vault',
+      modal_title: 'Set up decoy vault',
+      reset_modal_title: 'Reset decoy vault',
+      pass_placeholder: 'Decoy passphrase (6+ characters)',
+      confirm_placeholder: 'Confirm decoy passphrase',
+      err_same: 'The decoy passphrase must be different from your main passphrase.',
+      created: 'Decoy vault created',
+      reset_done: 'Decoy vault reset',
+      removed: 'Decoy vault removed',
+      remove_confirm: 'Remove the decoy vault from this device? The decoy data will be gone.',
+    },
+    import: {
+      title: 'Import from another app',
+      body: 'Select the format, then pick your exported file. Nothing is uploaded — parsing happens on this device.',
+      apple: 'Apple Health (export.xml)',
+      flo: 'Flo (JSON export)',
+      clue: 'Clue (CSV export)',
+      preview_title: 'Import from {source}',
+      reading: 'Reading {name}\u2026',
+      read_fail: 'Could not read file',
+      new_days: 'New days',
+      merge: 'Merge',
+      unchanged: 'Unchanged',
+      nothing: 'Nothing to import from this file.',
+      more: '\u2026and {n} more.',
+      overwrite: 'Overwrite my existing entries on conflict (default merges non-destructively)',
+      btn: 'Import',
+      done: 'Imported {n} day',
+      done_plural: 'Imported {n} days',
+      cols: { date: 'Date', flow: 'Flow' },
+    },
+    quickhide: {
+      message: 'Tap to reveal.',
+      message_locked: 'Enter your passphrase to reveal.',
+    },
+    errors: {
+      no_crypto: 'Your browser does not support Web Crypto on this URL. Serve the file over HTTPS or localhost.',
+      corrupt_backup: 'Backup is corrupted',
+      bad_backup: 'Could not read backup file',
+      wrong_pass: 'Incorrect passphrase or corrupted backup.',
+    },
+    general: {
+      not_medical: 'Estimate based on your past cycles. Not medical advice.',
+      pred_not_medical: 'Predictions are estimates from your past cycles. Not medical advice.',
+    },
+  },
+};
+
+// Locales registered here appear in the settings language picker.
+const LOCALE_META = [
+  { id: 'en', label: 'English' },
+  // Future: { id: 'hi', label: '\u0939\u093f\u0928\u094d\u0926\u0940' }, etc.
+];
+
+const I18N = {
+  current: 'en',
+  fallback: 'en',
+
+  set(locale) {
+    if (!LOCALES[locale]) locale = this.fallback;
+    this.current = locale;
+    document.documentElement.lang = locale;
+    document.documentElement.dir = LOCALES[locale].meta.rtl ? 'rtl' : 'ltr';
+  },
+
+  // Dotted-key lookup with {param} interpolation. Falls back to English.
+  t(key, params) {
+    const lookup = (locale) => {
+      let v = LOCALES[locale];
+      for (const part of key.split('.')) {
+        if (v == null) return null;
+        v = v[part];
+      }
+      return v;
+    };
+    let v = lookup(this.current);
+    if (v == null) v = lookup(this.fallback);
+    if (v == null) return key; // Loud fallback so missing keys are visible.
+    if (params && typeof v === 'string') {
+      return v.replace(/\{(\w+)\}/g, (_, k) => (params[k] != null ? params[k] : `{${k}}`));
+    }
+    return v;
+  },
+
+  defaults(kind) {
+    return (LOCALES[this.current].defaults && LOCALES[this.current].defaults[kind])
+      || LOCALES[this.fallback].defaults[kind] || [];
+  },
+};
+const t = I18N.t.bind(I18N);
+
+// ---------------------------------------------------------------------------
+// Storage layer — two always-present slots for plausible deniability.
+//
+// IndexedDB store `vault` holds records at keys 'slot0' and 'slot1'. Each slot
+// is { salt, iv, ciphertext, version, hasPassphrase }. From the outside, slots
+// are indistinguishable. On unlock, the passphrase is tried against each slot
+// and the first successful decrypt wins. The primary vault always lives at
+// some slot; the decoy, if configured, lives at the other. Slots that are
+// *not* a real vault hold random bytes of the same shape so they look the
+// same to any inspector.
+//
+// Hints are intentionally NOT stored on the record, because a hint on one
+// slot and none on another would reveal which is real. Hints live inside the
+// encrypted data and are only visible after unlock.
+// ---------------------------------------------------------------------------
+const DB_NAME = 'lunar';
+const DB_STORE = 'vault';
+const DB_KEY_LEGACY = 'main'; // pre-slot records
+const DB_SLOTS = ['slot0', 'slot1'];
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(DB_STORE)) {
+        db.createObjectStore(DB_STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbGetKey(key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbPutKey(key, record) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(record, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function dbDeleteKey(key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function dbClear() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// Create a "dummy" slot: random bytes that look like a well-formed record,
+// so that inspection of IndexedDB reveals two indistinguishable slots.
+// Nothing in the universe decrypts this — which is correct for a decoy-unused
+// slot; a coercer checking only one passphrase will succeed on one slot.
+function createDummySlot(approxPlaintextLen = 2048) {
+  const ciphertext = crypto.getRandomValues(new Uint8Array(approxPlaintextLen + 16));
+  return {
+    version: 1,
+    hasPassphrase: true, // matches a real slot — prevents a shape tell
+    salt: crypto.getRandomValues(new Uint8Array(CRYPTO.SALT_LEN)),
+    iv: crypto.getRandomValues(new Uint8Array(CRYPTO.IV_LEN)),
+    ciphertext,
+  };
+}
+
+// Back-compat shim for the old single-record API. Returns the current primary
+// slot record (slot0 if slot0 exists, otherwise the only slot that does).
+async function dbGet() {
+  // Legacy migration: if an old 'main' record exists, convert to two-slot.
+  const legacy = await dbGetKey(DB_KEY_LEGACY);
+  if (legacy) {
+    await dbPutKey('slot0', legacy);
+    await dbPutKey('slot1', createDummySlot());
+    await dbDeleteKey(DB_KEY_LEGACY);
+    return legacy;
+  }
+  for (const key of DB_SLOTS) {
+    const r = await dbGetKey(key);
+    if (r) return r;
+  }
+  return null;
+}
+
+// Legacy single-slot put — used only by one import path; targets slot0.
+async function dbPut(record) { return dbPutKey('slot0', record); }
+
+// ---------------------------------------------------------------------------
+// Vault — wraps encrypt/decrypt of the app data blob
+// ---------------------------------------------------------------------------
+const Vault = {
+  key: null,            // CryptoKey, in memory only
+  hasPassphrase: false,
+  data: null,
+  activeSlot: null,     // 'slot0' | 'slot1' — which slot was unlocked
+
+  async exists() {
+    // Any slot present = vault exists. Legacy 'main' also counts.
+    if (await dbGetKey(DB_KEY_LEGACY)) return true;
+    for (const k of DB_SLOTS) if (await dbGetKey(k)) return true;
+    return false;
+  },
+
+  async setup(passphrase, hint, initialData) {
+    const hasPass = passphrase.length > 0;
+    const salt = CRYPTO.randomSalt();
+    const key = await CRYPTO.deriveKey(
+      hasPass ? passphrase : CRYPTO.NO_PASS_CONSTANT, salt
+    );
+    // Mark as primary in the encrypted blob.
+    initialData.settings._isPrimary = true;
+    const plaintext = JSON.stringify(initialData);
+    const { iv, ciphertext } = await CRYPTO.encrypt(key, plaintext);
+
+    // Slot 0 = primary, slot 1 = dummy of similar size.
+    await dbPutKey('slot0', {
+      version: 1,
+      hasPassphrase: hasPass,
+      salt, iv, ciphertext,
+    });
+    await dbPutKey('slot1', createDummySlot(plaintext.length));
+
+    this.key = key;
+    this.hasPassphrase = hasPass;
+    this.data = initialData;
+    this.activeSlot = 'slot0';
+    this._persistSessionKey();
+  },
+
+  async _tryUnlockSlot(slotKey, passphrase) {
+    const rec = await dbGetKey(slotKey);
+    if (!rec) return null;
+    const key = await CRYPTO.deriveKey(
+      rec.hasPassphrase ? passphrase : CRYPTO.NO_PASS_CONSTANT, rec.salt
+    );
+    try {
+      const plain = await CRYPTO.decrypt(key, rec.iv, rec.ciphertext);
+      const parsed = JSON.parse(plain);
+      return { rec, key, data: parsed };
+    } catch (e) {
+      return null;
+    }
+  },
+
+  async unlock(passphrase) {
+    // Legacy migration trigger
+    const legacy = await dbGetKey(DB_KEY_LEGACY);
+    if (legacy) await dbGet();
+
+    // Try each slot; the first one that decrypts wins. Randomise order so
+    // there's no timing tell about which slot is "main."
+    const order = Math.random() < 0.5 ? ['slot0', 'slot1'] : ['slot1', 'slot0'];
+    for (const slotKey of order) {
+      const res = await this._tryUnlockSlot(slotKey, passphrase);
+      if (res) {
+        this.key = res.key;
+        this.data = res.data;
+        this.hasPassphrase = res.rec.hasPassphrase;
+        this.activeSlot = slotKey;
+        this._persistSessionKey();
+        return true;
+      }
+    }
+    return false;
+  },
+
+  async tryAutoUnlock() {
+    // No-passphrase single-slot fast path
+    for (const slotKey of DB_SLOTS) {
+      const rec = await dbGetKey(slotKey);
+      if (rec && !rec.hasPassphrase) {
+        const ok = await this._tryUnlockSlot(slotKey, '');
+        if (ok) {
+          this.key = ok.key; this.data = ok.data;
+          this.hasPassphrase = false; this.activeSlot = slotKey;
+          return true;
+        }
+      }
+    }
+    // Session key restore — stored alongside the slot name so we unlock the
+    // same vault we had open before.
+    const stored = sessionStorage.getItem('lunar.sk');
+    const slotName = sessionStorage.getItem('lunar.sk.slot');
+    if (stored && slotName) {
+      try {
+        const rec = await dbGetKey(slotName);
+        if (!rec) throw new Error('slot gone');
+        const rawKey = Uint8Array.from(atob(stored), c => c.charCodeAt(0));
+        const key = await crypto.subtle.importKey(
+          'raw', rawKey,
+          { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+        );
+        const plain = await CRYPTO.decrypt(key, rec.iv, rec.ciphertext);
+        this.data = JSON.parse(plain);
+        this.key = key;
+        this.hasPassphrase = true;
+        this.activeSlot = slotName;
+        return true;
+      } catch (e) {
+        sessionStorage.removeItem('lunar.sk');
+        sessionStorage.removeItem('lunar.sk.slot');
+      }
+    }
+    return false;
+  },
+
+  async _persistSessionKey() {
+    if (!this.hasPassphrase) return;
+    if (!this.data?.settings?.rememberSession) {
+      sessionStorage.removeItem('lunar.sk');
+      sessionStorage.removeItem('lunar.sk.slot');
+      return;
+    }
+    try {
+      const raw = await crypto.subtle.exportKey('raw', this.key);
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(raw)));
+      sessionStorage.setItem('lunar.sk', b64);
+      sessionStorage.setItem('lunar.sk.slot', this.activeSlot);
+    } catch (e) {
+      // extractable=false — cannot persist, re-derive on unlock instead.
+    }
+  },
+
+  async save() {
+    if (!this.key || !this.data) throw new Error('not unlocked');
+    const rec = await dbGetKey(this.activeSlot);
+    const iv = crypto.getRandomValues(new Uint8Array(CRYPTO.IV_LEN));
+    const plaintext = JSON.stringify(this.data);
+    const data = new TextEncoder().encode(plaintext);
+    const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, this.key, data);
+    await dbPutKey(this.activeSlot, {
+      version: 1,
+      hasPassphrase: rec.hasPassphrase,
+      salt: rec.salt,
+      iv,
+      ciphertext: new Uint8Array(cipher),
+    });
+  },
+
+  async changePassphrase(newPass, newHint) {
+    const newSalt = CRYPTO.randomSalt();
+    const hasPass = newPass.length > 0;
+    const newKey = await CRYPTO.deriveKey(
+      hasPass ? newPass : CRYPTO.NO_PASS_CONSTANT, newSalt
+    );
+    if (newHint != null) this.data.settings.passphraseHint = newHint || null;
+    const plaintext = JSON.stringify(this.data);
+    const iv = crypto.getRandomValues(new Uint8Array(CRYPTO.IV_LEN));
+    const data = new TextEncoder().encode(plaintext);
+    const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, newKey, data);
+    await dbPutKey(this.activeSlot, {
+      version: 1,
+      hasPassphrase: hasPass,
+      salt: newSalt, iv,
+      ciphertext: new Uint8Array(cipher),
+    });
+    this.key = newKey;
+    this.hasPassphrase = hasPass;
+    sessionStorage.removeItem('lunar.sk');
+    sessionStorage.removeItem('lunar.sk.slot');
+  },
+
+  // Write a decoy vault into the non-active slot.
+  async setupDecoy(passphrase, decoyData) {
+    if (!this.activeSlot) throw new Error('not unlocked');
+    if (!this.data?.settings?._isPrimary) throw new Error('only primary can manage decoy');
+    const other = this.activeSlot === 'slot0' ? 'slot1' : 'slot0';
+    const salt = CRYPTO.randomSalt();
+    const key = await CRYPTO.deriveKey(passphrase, salt);
+    decoyData.settings._isPrimary = false;
+    const plaintext = JSON.stringify(decoyData);
+    const { iv, ciphertext } = await CRYPTO.encrypt(key, plaintext);
+    await dbPutKey(other, {
+      version: 1,
+      hasPassphrase: true,
+      salt, iv, ciphertext,
+    });
+  },
+
+  // Is the decoy slot a real encrypted vault, or a dummy? We can only
+  // distinguish by trying to decrypt with the supplied passphrase during
+  // setup. Before that, all we can say is "another slot exists, we don't
+  // know if it's a decoy or a dummy."
+  async decoyState() {
+    if (!this.activeSlot) return 'unknown';
+    // This state is only meaningful to the primary vault.
+    if (!this.data?.settings?._isPrimary) return 'unknown';
+    // We track whether a decoy has been configured via a flag in the primary.
+    return this.data.settings._hasDecoy ? 'configured' : 'none';
+  },
+
+  async markDecoyConfigured(yes) {
+    if (!this.data?.settings?._isPrimary) return;
+    this.data.settings._hasDecoy = !!yes;
+    await this.save();
+  },
+
+  async removeDecoy() {
+    if (!this.activeSlot) throw new Error('not unlocked');
+    if (!this.data?.settings?._isPrimary) throw new Error('only primary can manage decoy');
+    const other = this.activeSlot === 'slot0' ? 'slot1' : 'slot0';
+    // Overwrite with a fresh dummy of similar shape.
+    const approxLen = JSON.stringify(this.data).length;
+    await dbPutKey(other, createDummySlot(approxLen));
+    await this.markDecoyConfigured(false);
+  },
+
+  lock() {
+    this.key = null;
+    this.data = null;
+    this.activeSlot = null;
+    sessionStorage.removeItem('lunar.sk');
+    sessionStorage.removeItem('lunar.sk.slot');
+  },
+
+  async wipe() {
+    await dbClear();
+    this.lock();
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Data model helpers
+// ---------------------------------------------------------------------------
+function newData() {
+  return {
+    version: 1,
+    settings: {
+      passphraseHint: null,
+      tabTitle: 'Lunar',
+      language: 'en',
+      theme: 'default',
+      reminders: { periodSoon: false, logToday: false, leadDays: 2 },
+      customSymptoms: [],
+      customMoods: [],
+      customFields: [],
+      medicalDisclaimerAcknowledged: false,
+      firstRunCompletedAt: new Date().toISOString(),
+      rememberSession: false,
+      predictionModel: 'moving-avg',
+    },
+    days: {},
+    cycles: [], // derived, cached
+  };
+}
+
+function blankDay() {
+  return {
+    flow: 'none',
+    symptoms: [],
+    mood: [],
+    activities: [],
+    notes: '',
+    custom: {},
+  };
+}
+
+// Date helpers (all local time)
+function ymd(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+function parseYmd(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function addDays(d, n) {
+  const r = new Date(d); r.setDate(r.getDate() + n); return r;
+}
+function daysBetween(a, b) {
+  const ms = parseYmd(b).getTime() - parseYmd(a).getTime();
+  return Math.round(ms / 86400000);
+}
+function todayYmd() { return ymd(new Date()); }
+
+// Derive cycles from days{}. A cycle starts on the first flowing day after a non-flowing day
+// (or the very first flow day ever). endDate is the day before the next cycle start.
+function deriveCycles(days) {
+  const entries = Object.entries(days)
+    .filter(([_, d]) => d)
+    .sort(([a], [b]) => a.localeCompare(b));
+  if (entries.length === 0) return [];
+
+  const flowDays = new Set(entries.filter(([_, d]) => d.flow && d.flow !== 'none').map(([k]) => k));
+  if (flowDays.size === 0) return [];
+
+  const sortedFlow = [...flowDays].sort();
+  const starts = [];
+  let prev = null;
+  for (const k of sortedFlow) {
+    if (!prev) { starts.push(k); prev = k; continue; }
+    const gap = daysBetween(prev, k);
+    if (gap > 1) starts.push(k);
+    prev = k;
+  }
+
+  // Cycles outside this clinical range are excluded from statistics (mean,
+  // prediction, charts). They remain in the cycles array so the calendar
+  // still shows the underlying flow days, but lengthDays is set to null and
+  // `gap: true` is flagged so downstream code can surface a warning if
+  // needed. The bounds are deliberately wide:
+  //   - Lower 18: below this is very unusually short (most likely a
+  //     tracking artefact or data-boundary effect, e.g. importing history
+  //     on top of a fresh manual log). 21 is the clinical lower bound for
+  //     "regular"; 18 keeps a cushion for genuinely short cycles.
+  //   - Upper 60: above this is almost certainly a gap in tracking, not a
+  //     real cycle. Perimenopausal users with genuinely longer cycles can
+  //     still see their history on the calendar, just not in the stats.
+  const MIN_PLAUSIBLE_CYCLE_DAYS = 18;
+  const MAX_PLAUSIBLE_CYCLE_DAYS = 60;
+
+  const cycles = [];
+  for (let i = 0; i < starts.length; i++) {
+    const startDate = starts[i];
+    const nextStart = starts[i + 1] || null;
+    const endDate = nextStart ? ymd(addDays(parseYmd(nextStart), -1)) : null;
+    let periodLen = 0;
+    let cur = startDate;
+    while (flowDays.has(cur)) {
+      periodLen++;
+      cur = ymd(addDays(parseYmd(cur), 1));
+    }
+    const rawLength = endDate ? daysBetween(startDate, nextStart) : null;
+    const implausible = rawLength != null && (rawLength < MIN_PLAUSIBLE_CYCLE_DAYS || rawLength > MAX_PLAUSIBLE_CYCLE_DAYS);
+    const lengthDays = implausible ? null : rawLength;
+    cycles.push({ startDate, endDate, lengthDays, periodLengthDays: periodLen, gap: implausible, rawLength });
+  }
+  return cycles;
+}
+
+// Prediction: mean of last 6 full cycle lengths, window ±max(2, ceil(stddev))
+function predictMovingAvg(cycles) {
+  const full = cycles.filter(c => c.lengthDays != null).slice(-6);
+  if (full.length < 2 || cycles.length === 0) return null;
+  const last = cycles[cycles.length - 1];
+  const lens = full.map(c => c.lengthDays);
+  const mean = lens.reduce((a, b) => a + b, 0) / lens.length;
+  const variance = lens.reduce((s, l) => s + (l - mean) ** 2, 0) / lens.length;
+  const sd = Math.sqrt(variance);
+  const halfWindow = Math.max(2, Math.ceil(sd));
+  return buildPredictionOutput(last, mean, sd, halfWindow, full.length, 'moving-avg');
+}
+
+// Bayesian prediction: normal-normal conjugate update.
+//   Prior over cycle-length mean: N(28, 4²)  — clinical population prior.
+//   Likelihood variance σ²: sample variance with a floor of 4 (SD ≥ 2 days);
+//   when observations are too few, falls back to prior variance.
+//   Posterior mean pulls toward the prior when data is thin, toward the
+//   sample mean as data accumulates. Predictive SD = √(σ_post² + σ²).
+function predictBayesian(cycles) {
+  const full = cycles.filter(c => c.lengthDays != null).slice(-12);
+  if (full.length < 2 || cycles.length === 0) return null;
+  const last = cycles[cycles.length - 1];
+  const lens = full.map(c => c.lengthDays);
+  const n = lens.length;
+  const xbar = lens.reduce((a, b) => a + b, 0) / n;
+
+  // Prior
+  const MU0 = 28;
+  const VAR0 = 16; // SD 4
+
+  // Likelihood variance (sample variance with a floor)
+  const sampleVar = lens.reduce((s, l) => s + (l - xbar) ** 2, 0) / n;
+  const sigma2 = Math.max(4, n >= 3 ? sampleVar : VAR0);
+
+  // Posterior
+  const precision = (1 / VAR0) + (n / sigma2);
+  const posteriorMean = ((MU0 / VAR0) + (n * xbar / sigma2)) / precision;
+  const posteriorVar = 1 / precision;
+
+  // Predictive distribution: variance = posterior variance + likelihood variance
+  const predSd = Math.sqrt(posteriorVar + sigma2);
+  const halfWindow = Math.max(2, Math.ceil(predSd));
+
+  return buildPredictionOutput(last, posteriorMean, predSd, halfWindow, n, 'bayesian');
+}
+
+function buildPredictionOutput(last, mean, sd, halfWindow, basedOn, model) {
+  const center = Math.round(mean);
+  const nextStart = ymd(addDays(parseYmd(last.startDate), center));
+  const windowStart = ymd(addDays(parseYmd(last.startDate), center - halfWindow));
+  const windowEnd = ymd(addDays(parseYmd(last.startDate), center + halfWindow));
+  const ovulationEst = ymd(addDays(parseYmd(nextStart), -14));
+  const fertileStart = ymd(addDays(parseYmd(ovulationEst), -3));
+  const fertileEnd = ymd(addDays(parseYmd(ovulationEst), 3));
+  return {
+    nextStart, windowStart, windowEnd,
+    meanLen: mean, sd, halfWindow,
+    ovulationEst, fertileStart, fertileEnd,
+    basedOn, model,
+  };
+}
+
+// Dispatch — which model to use is a user setting, default moving-avg.
+function predict(cycles) {
+  const model = (Vault.data && Vault.data.settings && Vault.data.settings.predictionModel) || 'moving-avg';
+  return model === 'bayesian' ? predictBayesian(cycles) : predictMovingAvg(cycles);
+}
+
+function currentCycleDay(cycles) {
+  if (cycles.length === 0) return null;
+  const last = cycles[cycles.length - 1];
+  return daysBetween(last.startDate, todayYmd()) + 1;
+}
+
+// Correlation insights: for each symptom/mood, how often it appeared in the
+// `windowDays` days before a cycle start, across the last `lookback` cycles.
+// Returns [{ kind, name, count, denominator, pct }] sorted by pct descending.
+// Only cycles that have a prior cycle (so we know the "pre-period" window
+// falls in a valid observation range) and enough logged days to be meaningful
+// count toward the denominator.
+function correlationInsights(cycles, days, windowDays = 3, lookback = 10, minHits = 3) {
+  if (!cycles || cycles.length < 2) return [];
+  const recent = cycles.slice(-lookback - 1); // +1 so we still get `lookback` boundaries
+  const boundaries = []; // list of { preStart, preEnd, cycleStart }
+  for (let i = 1; i < recent.length; i++) {
+    const start = recent[i].startDate;
+    const preEnd = ymd(addDays(parseYmd(start), -1));
+    const preStart = ymd(addDays(parseYmd(start), -windowDays));
+    const prevEnd = recent[i - 1].endDate || recent[i - 1].startDate;
+    // Skip if the pre-window would overlap the previous cycle's flow days.
+    if (preStart < recent[i - 1].startDate) continue;
+    boundaries.push({ preStart, preEnd, cycleStart: start });
+  }
+  const denominator = boundaries.length;
+  if (denominator < 2) return [];
+
+  const hitsByKind = { symptom: new Map(), mood: new Map() };
+  for (const b of boundaries) {
+    const preSymptoms = new Set();
+    const preMoods = new Set();
+    let cursor = parseYmd(b.preStart);
+    const end = parseYmd(b.preEnd);
+    while (cursor <= end) {
+      const d = days[ymd(cursor)];
+      if (d) {
+        for (const s of (d.symptoms || [])) preSymptoms.add(s);
+        for (const m of (d.mood || [])) preMoods.add(m);
+      }
+      cursor = addDays(cursor, 1);
+    }
+    for (const s of preSymptoms) hitsByKind.symptom.set(s, (hitsByKind.symptom.get(s) || 0) + 1);
+    for (const m of preMoods) hitsByKind.mood.set(m, (hitsByKind.mood.get(m) || 0) + 1);
+  }
+
+  const rows = [];
+  for (const [name, count] of hitsByKind.symptom.entries()) {
+    if (count >= minHits) rows.push({ kind: 'symptom', name, count, denominator, pct: count / denominator });
+  }
+  for (const [name, count] of hitsByKind.mood.entries()) {
+    if (count >= minHits) rows.push({ kind: 'mood', name, count, denominator, pct: count / denominator });
+  }
+  rows.sort((a, b) => b.pct - a.pct || b.count - a.count);
+  return rows.slice(0, 8);
+}
+
+// ---------------------------------------------------------------------------
+// UI constants
+// ---------------------------------------------------------------------------
+const FLOW_VALUES = ['none', 'spotting', 'light', 'medium', 'heavy'];
+function flowOptions() {
+  return FLOW_VALUES.map(v => ({ value: v, label: t(`flow.${v}`) }));
+}
+function defaultSymptoms() { return I18N.defaults('symptoms'); }
+function defaultMoods()    { return I18N.defaults('moods'); }
+function defaultActivities() { return I18N.defaults('activities'); }
+
+// ---------------------------------------------------------------------------
+// App state + router
+// ---------------------------------------------------------------------------
+const state = {
+  view: 'today',
+  calMonth: null, // Date, first of month
+  dayDetail: null, // ymd string
+};
+
+function save() {
+  Vault.data.cycles = deriveCycles(Vault.data.days);
+  return Vault.save();
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function h(tag, attrs = {}, children = []) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') el.className = v;
+    else if (k === 'html') el.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else if (v === true) el.setAttribute(k, '');
+    else if (v !== false && v != null) el.setAttribute(k, v);
+  }
+  for (const c of [].concat(children)) {
+    if (c == null || c === false) continue;
+    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return el;
+}
+
+function render() {
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+
+  if (!Vault.data) {
+    // should not happen — unlock/setup screens have their own render paths
+    return;
+  }
+
+  // Apply tab title
+  document.title = Vault.data.settings.tabTitle || 'Lunar';
+
+  const app = h('div', { class: 'app' });
+  app.appendChild(renderHeader());
+
+  let view;
+  switch (state.view) {
+    case 'today': view = renderToday(); break;
+    case 'calendar': view = renderCalendar(); break;
+    case 'stats': view = renderStats(); break;
+    case 'settings': view = renderSettings(); break;
+    case 'day': view = renderDayDetail(state.dayDetail); break;
+    case 'reference': view = renderReference(); break;
+    default: view = renderToday();
+  }
+  app.appendChild(view);
+  root.appendChild(app);
+  root.appendChild(renderNav());
+}
+
+function renderHeader() {
+  const today = new Date();
+  const cycles = Vault.data.cycles || [];
+  const cd = currentCycleDay(cycles);
+  const dateStr = today.toLocaleDateString(I18N.current, { weekday: 'short', month: 'short', day: 'numeric' });
+  return h('header', { class: 'top' }, [
+    h('div', {}, [
+      h('h1', {}, Vault.data.settings.tabTitle || t('app.title')),
+      h('div', { class: 'sub' },
+        cd ? t('header.cycle_day', { n: cd, date: dateStr }) : dateStr
+      ),
+    ]),
+  ]);
+}
+
+function renderNav() {
+  const items = [
+    ['today', t('nav.today'), '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'],
+    ['calendar', t('nav.calendar'), '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>'],
+    ['stats', t('nav.stats'), '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'],
+    ['settings', t('nav.settings'), '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>'],
+  ];
+  const nav = h('nav', { class: 'bottom', role: 'navigation', 'aria-label': t('nav.settings') });
+  for (const [id, label, svg] of items) {
+    const isActive = state.view === id || (state.view === 'day' && id === 'calendar');
+    const btn = h('button', {
+      class: isActive ? 'active' : '',
+      'aria-label': label,
+      'aria-current': isActive ? 'page' : 'false',
+      onclick: () => { state.view = id; render(); },
+    });
+    btn.innerHTML = svg + label;
+    nav.appendChild(btn);
+  }
+  return nav;
+}
+
+// ---------------------------------------------------------------------------
+// Today view
+// ---------------------------------------------------------------------------
+function renderToday() {
+  const root = h('div');
+  const today = todayYmd();
+  const day = Vault.data.days[today] || blankDay();
+  const cycles = Vault.data.cycles || [];
+  const pred = predict(cycles);
+
+  // Prediction card
+  const predCard = h('section', { class: 'card', 'aria-labelledby': 'pred-h' });
+  predCard.appendChild(h('h3', { id: 'pred-h' }, t('today.prediction')));
+  if (!pred) {
+    predCard.appendChild(h('p', { class: 'muted' },
+      cycles.length === 0 ? t('today.cold_start_empty') : t('today.cold_start_partial')
+    ));
+  } else {
+    const fmt = s => parseYmd(s).toLocaleDateString(I18N.current, { month: 'short', day: 'numeric' });
+    const now = todayYmd();
+    if (now < pred.windowStart) {
+      // Future window — normal case
+      predCard.appendChild(h('p', {}, t('today.pred_between', { start: fmt(pred.windowStart), end: fmt(pred.windowEnd) })));
+      predCard.appendChild(h('p', { class: 'mute-small' }, t('today.ovulation', {
+        date: fmt(pred.ovulationEst), start: fmt(pred.fertileStart), end: fmt(pred.fertileEnd),
+      })));
+    } else if (now >= pred.windowStart && now <= pred.windowEnd) {
+      // Inside the predicted window
+      predCard.appendChild(h('p', {}, t('today.in_window', { start: fmt(pred.windowStart), end: fmt(pred.windowEnd) })));
+    } else {
+      // Past the predicted window — how late?
+      const daysLate = daysBetween(pred.windowEnd, now);
+      // If we're more than ~45 days past, the prediction is stale; suggest fresh data.
+      if (daysLate > 45) {
+        predCard.appendChild(h('p', {}, t('today.stale')));
+      } else {
+        predCard.appendChild(h('p', {}, daysLate === 1
+          ? t('today.late_one', { n: daysLate })
+          : t('today.late', { n: daysLate })));
+        predCard.appendChild(h('p', { class: 'mute-small' }, t('today.late_sub', { expected: fmt(pred.nextStart) })));
+      }
+    }
+    predCard.appendChild(h('p', { class: 'disclaimer' }, t('general.not_medical')));
+  }
+  root.appendChild(predCard);
+
+  // Log today card
+  const logCard = h('section', { class: 'card', 'aria-labelledby': 'today-h' });
+  logCard.appendChild(h('h3', { id: 'today-h' }, t('today.title')));
+  logCard.appendChild(renderDayEditor(today, day));
+  root.appendChild(logCard);
+
+  return root;
+}
+
+// ---------------------------------------------------------------------------
+// Day editor (shared by Today and Day detail)
+// ---------------------------------------------------------------------------
+function renderDayEditor(dateStr, day) {
+  const container = h('div');
+
+  // Flow chips
+  container.appendChild(h('label', {}, t('day.flow')));
+  const flowRow = h('div', { class: 'chip-row', role: 'radiogroup', 'aria-label': t('day.flow') });
+  for (const opt of flowOptions()) {
+    const active = day.flow === opt.value;
+    const cls = `chip flow-${opt.value} ${active ? 'active' : ''}`;
+    flowRow.appendChild(h('button', {
+      class: cls, type: 'button', role: 'radio', 'aria-checked': active ? 'true' : 'false',
+      onclick: async () => {
+        day.flow = opt.value;
+        Vault.data.days[dateStr] = day;
+        await save();
+        render();
+      },
+    }, opt.label));
+  }
+  container.appendChild(flowRow);
+
+  // Symptoms
+  container.appendChild(h('label', { style: 'margin-top:14px' }, t('day.symptoms')));
+  container.appendChild(renderMultiChips(defaultSymptoms().concat(Vault.data.settings.customSymptoms), day.symptoms, async v => {
+    day.symptoms = v;
+    Vault.data.days[dateStr] = day;
+    await save();
+  }));
+
+  // Mood
+  container.appendChild(h('label', { style: 'margin-top:14px' }, t('day.mood')));
+  container.appendChild(renderMultiChips(defaultMoods().concat(Vault.data.settings.customMoods), day.mood, async v => {
+    day.mood = v;
+    Vault.data.days[dateStr] = day;
+    await save();
+  }));
+
+  // Activities
+  container.appendChild(h('label', { style: 'margin-top:14px' }, t('day.activities')));
+  container.appendChild(renderMultiChips(defaultActivities(), day.activities, async v => {
+    day.activities = v;
+    Vault.data.days[dateStr] = day;
+    await save();
+  }));
+
+  // Notes
+  container.appendChild(h('label', { style: 'margin-top:14px' }, t('day.notes')));
+  const ta = h('textarea', {
+    placeholder: t('day.notes_placeholder'),
+    'aria-label': t('day.notes'),
+    oninput: () => { day.notes = ta.value; },
+    onchange: async () => {
+      day.notes = ta.value;
+      Vault.data.days[dateStr] = day;
+      await save();
+      toast(t('day.saved'));
+    },
+  });
+  ta.value = day.notes || '';
+  container.appendChild(ta);
+
+  return container;
+}
+
+function renderMultiChips(options, selected, onchange) {
+  const row = h('div', { class: 'chip-row' });
+  const set = new Set(selected);
+  for (const opt of options) {
+    const isActive = set.has(opt);
+    row.appendChild(h('button', {
+      class: `chip ${isActive ? 'active' : ''}`, type: 'button',
+      onclick: async () => {
+        if (set.has(opt)) set.delete(opt); else set.add(opt);
+        await onchange([...set]);
+        render();
+      },
+    }, opt));
+  }
+  return row;
+}
+
+// ---------------------------------------------------------------------------
+// Calendar view
+// ---------------------------------------------------------------------------
+function renderCalendar() {
+  if (!state.calMonth) {
+    const n = new Date();
+    state.calMonth = new Date(n.getFullYear(), n.getMonth(), 1);
+  }
+  const root = h('div');
+  const m = state.calMonth;
+  const monthLabel = m.toLocaleDateString(I18N.current, { month: 'long', year: 'numeric' });
+
+  const header = h('div', { class: 'cal-header' }, [
+    h('button', { 'aria-label': t('cal.prev'), onclick: () => { state.calMonth = new Date(m.getFullYear(), m.getMonth() - 1, 1); render(); } }, '‹'),
+    h('strong', { 'aria-live': 'polite' }, monthLabel),
+    h('button', { 'aria-label': t('cal.next'), onclick: () => { state.calMonth = new Date(m.getFullYear(), m.getMonth() + 1, 1); render(); } }, '›'),
+  ]);
+  root.appendChild(header);
+
+  const grid = h('div', { class: 'cal-grid', role: 'grid', 'aria-label': monthLabel });
+  const dows = I18N.defaults('dow');
+  for (const d of dows) grid.appendChild(h('div', { class: 'cal-dow', role: 'columnheader' }, d));
+
+  const firstDay = new Date(m.getFullYear(), m.getMonth(), 1);
+  // Monday-start: getDay is 0=Sun..6=Sat -> shift
+  const shift = (firstDay.getDay() + 6) % 7;
+  const start = addDays(firstDay, -shift);
+
+  const today = todayYmd();
+  const pred = predict(Vault.data.cycles || []);
+  const predSet = new Set();
+  const fertileSet = new Set();
+  if (pred) {
+    let d = parseYmd(pred.windowStart);
+    const end = parseYmd(pred.windowEnd);
+    while (d <= end) { predSet.add(ymd(d)); d = addDays(d, 1); }
+    let f = parseYmd(pred.fertileStart);
+    const fend = parseYmd(pred.fertileEnd);
+    while (f <= fend) { fertileSet.add(ymd(f)); f = addDays(f, 1); }
+  }
+
+  for (let i = 0; i < 42; i++) {
+    const cell = addDays(start, i);
+    const cellYmd = ymd(cell);
+    const day = Vault.data.days[cellYmd];
+    const inMonth = cell.getMonth() === m.getMonth();
+    const classes = ['cal-cell'];
+    if (!inMonth) classes.push('other');
+    if (cellYmd === today) classes.push('today');
+    if (day && day.flow && day.flow !== 'none') classes.push(`flow-${day.flow}`);
+    if (fertileSet.has(cellYmd) && inMonth) classes.push('fertile');
+    if (predSet.has(cellYmd) && inMonth && !(day && day.flow !== 'none')) classes.push('pred');
+    const cellEl = h('div', {
+      class: classes.join(' '),
+      role: 'gridcell', tabindex: inMonth ? '0' : '-1',
+      'data-ymd': cellYmd,
+      'aria-label': cell.toLocaleDateString(I18N.current, { weekday: 'long', month: 'long', day: 'numeric' }),
+      onclick: () => { state.view = 'day'; state.dayDetail = cellYmd; render(); },
+      onkeydown: (e) => handleCalKey(e, cellYmd, i),
+    }, String(cell.getDate()));
+    if (day && (day.symptoms.length || day.mood.length || day.notes)) {
+      cellEl.appendChild(h('span', { class: 'dot' }, '•'));
+    }
+    grid.appendChild(cellEl);
+  }
+  root.appendChild(grid);
+
+  // Legend
+  const legend = h('div', { class: 'card tight', style: 'margin-top:14px' });
+  legend.appendChild(h('div', { class: 'mute-small' }, t('cal.legend')));
+  root.appendChild(legend);
+  root.appendChild(h('p', { class: 'disclaimer' }, t('general.pred_not_medical')));
+
+  return root;
+}
+
+// Keyboard nav for calendar cells: arrows move, Enter/Space opens day.
+function handleCalKey(e, cellYmd, idx) {
+  const grid = e.target.closest('.cal-grid');
+  if (!grid) return;
+  const cells = [...grid.querySelectorAll('.cal-cell')];
+  let next = null;
+  switch (e.key) {
+    case 'ArrowLeft': next = cells[idx - 1]; break;
+    case 'ArrowRight': next = cells[idx + 1]; break;
+    case 'ArrowUp': next = cells[idx - 7]; break;
+    case 'ArrowDown': next = cells[idx + 7]; break;
+    case 'Enter':
+    case ' ':
+      e.preventDefault();
+      state.view = 'day'; state.dayDetail = cellYmd; render();
+      return;
+    default: return;
+  }
+  if (next) { e.preventDefault(); next.focus(); }
+}
+
+// ---------------------------------------------------------------------------
+// Day detail
+// ---------------------------------------------------------------------------
+function renderDayDetail(dateStr) {
+  const root = h('div');
+  const day = Vault.data.days[dateStr] || blankDay();
+  const d = parseYmd(dateStr);
+  root.appendChild(h('div', { class: 'row between' }, [
+    h('h2', { style: 'margin:0' }, d.toLocaleDateString(I18N.current, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })),
+    h('button', { onclick: () => { state.view = 'calendar'; render(); } }, t('day.back')),
+  ]));
+  const card = h('div', { class: 'card' });
+  card.appendChild(renderDayEditor(dateStr, day));
+  root.appendChild(card);
+
+  const hasData = day.flow !== 'none' || day.symptoms.length || day.mood.length || day.activities.length || day.notes;
+  if (hasData) {
+    root.appendChild(h('button', {
+      class: 'ghost danger',
+      style: 'margin-top:8px',
+      onclick: async () => {
+        delete Vault.data.days[dateStr];
+        await save();
+        toast(t('day.cleared'));
+        render();
+      },
+    }, t('day.clear')));
+  }
+  return root;
+}
+
+// ---------------------------------------------------------------------------
+// Stats view
+// ---------------------------------------------------------------------------
+function renderStats() {
+  const root = h('div');
+  const cycles = Vault.data.cycles || [];
+  const full = cycles.filter(c => c.lengthDays != null);
+
+  const summary = h('div', { class: 'card' });
+  summary.appendChild(h('h3', {}, t('stats.summary')));
+  if (full.length === 0) {
+    summary.appendChild(h('p', { class: 'muted' }, t('stats.no_data')));
+  } else {
+    const lens = full.map(c => c.lengthDays);
+    const mean = lens.reduce((a, b) => a + b, 0) / lens.length;
+    const min = Math.min(...lens);
+    const max = Math.max(...lens);
+    const periodLens = cycles.map(c => c.periodLengthDays).filter(n => n > 0);
+    const periodMean = periodLens.length ? periodLens.reduce((a, b) => a + b, 0) / periodLens.length : 0;
+
+    summary.appendChild(statRow(t('stats.cycles_recorded'), cycles.length));
+    summary.appendChild(statRow(t('stats.full_cycles'), full.length));
+    summary.appendChild(statRow(t('stats.avg_cycle'), t('stats.days', { n: mean.toFixed(1) })));
+    summary.appendChild(statRow(t('stats.shortest'), t('stats.days', { n: min })));
+    summary.appendChild(statRow(t('stats.longest'), t('stats.days', { n: max })));
+    summary.appendChild(statRow(t('stats.avg_period'), t('stats.days', { n: periodMean.toFixed(1) })));
+  }
+  root.appendChild(summary);
+
+  if (full.length >= 2) {
+    const chartCard = h('div', { class: 'card' });
+    chartCard.appendChild(h('h3', {}, t('stats.cycle_length')));
+    const canvas = h('canvas', { class: 'chart' });
+    chartCard.appendChild(canvas);
+    root.appendChild(chartCard);
+    requestAnimationFrame(() => drawChart(canvas, full.map(c => c.lengthDays)));
+  }
+
+  // Symptom frequency
+  const symCount = {};
+  for (const d of Object.values(Vault.data.days)) {
+    for (const s of (d.symptoms || [])) symCount[s] = (symCount[s] || 0) + 1;
+  }
+  const symEntries = Object.entries(symCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  if (symEntries.length) {
+    const symCard = h('div', { class: 'card' });
+    symCard.appendChild(h('h3', {}, t('stats.top_symptoms')));
+    for (const [name, count] of symEntries) {
+      symCard.appendChild(statRow(name, count === 1 ? t('stats.days_one', { n: count }) : t('stats.days', { n: count })));
+    }
+    root.appendChild(symCard);
+  }
+
+  // Pattern / correlation insights
+  if (cycles.length >= 2) {
+    const rows = correlationInsights(cycles, Vault.data.days);
+    const patCard = h('div', { class: 'card' });
+    patCard.appendChild(h('h3', {}, t('stats.patterns')));
+    if (rows.length === 0) {
+      patCard.appendChild(h('p', { class: 'muted' }, t('stats.patterns_none')));
+    } else {
+      patCard.appendChild(h('p', { class: 'mute-small' }, t('stats.patterns_intro', { denom: rows[0].denominator })));
+      for (const r of rows) {
+        patCard.appendChild(statRow(r.name, `${r.count} / ${r.denominator}`));
+      }
+    }
+    root.appendChild(patCard);
+  }
+
+  root.appendChild(h('p', { class: 'disclaimer' }, t('stats.note')));
+  return root;
+}
+
+function statRow(label, value) {
+  return h('div', { class: 'stat-row' }, [
+    h('span', {}, label),
+    h('span', { class: 'v' }, String(value)),
+  ]);
+}
+
+function drawChart(canvas, values) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const w = rect.width, ht = rect.height;
+  const pad = 20;
+  const min = Math.min(...values) - 2;
+  const max = Math.max(...values) + 2;
+  const range = Math.max(1, max - min);
+  const stepX = (w - pad * 2) / Math.max(1, values.length - 1);
+
+  // axes
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-strong').trim();
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad, ht - pad); ctx.lineTo(w - pad, ht - pad);
+  ctx.stroke();
+
+  // line
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  values.forEach((v, i) => {
+    const x = pad + stepX * i;
+    const y = ht - pad - ((v - min) / range) * (ht - pad * 2);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // dots
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  values.forEach((v, i) => {
+    const x = pad + stepX * i;
+    const y = ht - pad - ((v - min) / range) * (ht - pad * 2);
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // labels
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim();
+  ctx.font = '11px system-ui';
+  ctx.fillText(`${Math.round(min)}`, 2, ht - pad + 4);
+  ctx.fillText(`${Math.round(max)}`, 2, 12);
+}
+
+// ---------------------------------------------------------------------------
+// Settings view
+// ---------------------------------------------------------------------------
+function renderSettings() {
+  const root = h('div');
+  const s = Vault.data.settings;
+
+  // Passphrase
+  const passCard = h('div', { class: 'card' });
+  passCard.appendChild(h('h3', {}, t('settings.passphrase')));
+  passCard.appendChild(h('p', { class: 'mute-small' },
+    Vault.hasPassphrase ? t('settings.pass_with') : t('settings.pass_without')
+  ));
+  passCard.appendChild(h('button', { onclick: () => openPassphraseModal() },
+    Vault.hasPassphrase ? t('settings.pass_change') : t('settings.pass_set')));
+  root.appendChild(passCard);
+
+  // Language
+  const langCard = h('div', { class: 'card' });
+  langCard.appendChild(h('h3', {}, t('settings.language')));
+  const sel = h('select', { 'aria-label': t('settings.language') });
+  for (const m of LOCALE_META) {
+    const opt = h('option', { value: m.id }, m.label);
+    if (m.id === (s.language || 'en')) opt.setAttribute('selected', '');
+    sel.appendChild(opt);
+  }
+  sel.addEventListener('change', async () => {
+    s.language = sel.value;
+    I18N.set(s.language);
+    await save();
+    render();
+  });
+  langCard.appendChild(sel);
+  langCard.appendChild(h('p', { class: 'mute-small', style: 'margin-top:8px' }, t('settings.language_note')));
+  root.appendChild(langCard);
+
+  // Prediction model
+  const predCard = h('div', { class: 'card' });
+  predCard.appendChild(h('h3', {}, t('settings.prediction')));
+  predCard.appendChild(h('p', { class: 'mute-small' }, t('settings.prediction_help')));
+  const predSel = h('select', { 'aria-label': t('settings.prediction') });
+  [['moving-avg', t('settings.prediction_movavg')], ['bayesian', t('settings.prediction_bayes')]].forEach(([v, l]) => {
+    const opt = h('option', { value: v }, l);
+    if ((s.predictionModel || 'moving-avg') === v) opt.setAttribute('selected', '');
+    predSel.appendChild(opt);
+  });
+  predSel.addEventListener('change', async () => {
+    s.predictionModel = predSel.value;
+    await save();
+    render();
+  });
+  predCard.appendChild(predSel);
+  root.appendChild(predCard);
+
+  // Theme
+  const themeCard = h('div', { class: 'card' });
+  themeCard.appendChild(h('h3', {}, t('settings.theme')));
+  const themeSel = h('select', { 'aria-label': t('settings.theme') });
+  [['default', t('settings.theme_default')], ['high-contrast', t('settings.theme_hc')]].forEach(([v, l]) => {
+    const opt = h('option', { value: v }, l);
+    if ((s.theme || 'default') === v) opt.setAttribute('selected', '');
+    themeSel.appendChild(opt);
+  });
+  themeSel.addEventListener('change', async () => {
+    s.theme = themeSel.value;
+    applyTheme(s.theme);
+    await save();
+  });
+  themeCard.appendChild(themeSel);
+  root.appendChild(themeCard);
+
+  // Tab title
+  const titleCard = h('div', { class: 'card' });
+  titleCard.appendChild(h('h3', {}, t('settings.tabtitle')));
+  titleCard.appendChild(h('p', { class: 'mute-small' }, t('settings.tabtitle_help')));
+  const titleInput = h('input', { type: 'text', value: s.tabTitle || t('app.title') });
+  titleInput.addEventListener('change', async () => {
+    s.tabTitle = titleInput.value.trim() || t('app.title');
+    await save();
+    document.title = s.tabTitle;
+    render();
+  });
+  titleCard.appendChild(titleInput);
+  const suggestRow = h('div', { class: 'chip-row', style: 'margin-top:8px' });
+  [t('app.title'), 'Notes', 'Journal', 'Calendar'].forEach(label => {
+    suggestRow.appendChild(h('button', {
+      class: 'chip', type: 'button',
+      onclick: async () => { s.tabTitle = label; await save(); render(); },
+    }, label));
+  });
+  titleCard.appendChild(suggestRow);
+  root.appendChild(titleCard);
+
+  // Privacy / quick hide
+  const qhCard = h('div', { class: 'card' });
+  qhCard.appendChild(h('h3', {}, t('settings.quickhide')));
+  qhCard.appendChild(h('p', { class: 'mute-small' }, t('settings.quickhide_help')));
+  root.appendChild(qhCard);
+
+  // Decoy vault — only visible from the primary vault
+  if (s._isPrimary) {
+    const decoyCard = h('div', { class: 'card' });
+    decoyCard.appendChild(h('h3', {}, t('decoy.title')));
+    decoyCard.appendChild(h('p', { class: 'mute-small' }, t('decoy.help')));
+    decoyCard.appendChild(h('p', { class: 'warn' }, t('decoy.warning')));
+    const isConfigured = !!s._hasDecoy;
+    decoyCard.appendChild(h('p', { class: 'mute-small' }, isConfigured ? t('decoy.status_on') : t('decoy.status_off')));
+    const dRow = h('div', { class: 'row' });
+    dRow.appendChild(h('button', { onclick: () => openDecoyModal(isConfigured) },
+      isConfigured ? t('decoy.reset_btn') : t('decoy.set_btn')));
+    if (isConfigured) {
+      dRow.appendChild(h('button', { class: 'danger', onclick: async () => {
+        if (!confirm(t('decoy.remove_confirm'))) return;
+        await Vault.removeDecoy();
+        toast(t('decoy.removed'));
+        render();
+      }}, t('decoy.remove_btn')));
+    }
+    decoyCard.appendChild(dRow);
+    root.appendChild(decoyCard);
+  }
+
+  // Reminders
+  const remCard = h('div', { class: 'card' });
+  remCard.appendChild(h('h3', {}, t('settings.reminders')));
+  remCard.appendChild(h('p', { class: 'mute-small' }, t('settings.reminders_help')));
+  const remState = s.reminders || (s.reminders = { periodSoon: false, logToday: false, leadDays: 2 });
+  remCard.appendChild(renderToggle(t('settings.reminder_period'), remState.periodSoon, async (v) => {
+    if (v) { const ok = await ensureNotificationPermission(); if (!ok) { toast(t('settings.reminder_perm_denied')); render(); return; } }
+    remState.periodSoon = v; await save(); scheduleReminders();
+  }));
+  remCard.appendChild(renderToggle(t('settings.reminder_log'), remState.logToday, async (v) => {
+    if (v) { const ok = await ensureNotificationPermission(); if (!ok) { toast(t('settings.reminder_perm_denied')); render(); return; } }
+    remState.logToday = v; await save(); scheduleReminders();
+  }));
+  const leadLabel = h('label', { style: 'margin-top:10px' }, t('settings.reminder_lead'));
+  const leadInput = h('input', { type: 'number', min: '0', max: '7', value: String(remState.leadDays) });
+  leadInput.addEventListener('change', async () => {
+    remState.leadDays = Math.max(0, Math.min(7, Number(leadInput.value) || 0));
+    await save(); scheduleReminders();
+  });
+  remCard.appendChild(leadLabel);
+  remCard.appendChild(leadInput);
+  root.appendChild(remCard);
+
+  // Session
+  const sessCard = h('div', { class: 'card' });
+  sessCard.appendChild(h('h3', {}, t('settings.session')));
+  sessCard.appendChild(h('button', { onclick: () => { Vault.lock(); render(); } }, t('settings.lock_now')));
+  root.appendChild(sessCard);
+
+  // Import
+  const importCard = h('div', { class: 'card' });
+  importCard.appendChild(h('h3', {}, t('settings.import_title')));
+  importCard.appendChild(h('p', { class: 'mute-small' }, t('settings.import_help')));
+  importCard.appendChild(h('button', { onclick: () => openImportPicker() }, t('settings.import_btn')));
+  root.appendChild(importCard);
+
+  // Export
+  const exportCard = h('div', { class: 'card' });
+  exportCard.appendChild(h('h3', {}, t('settings.backup')));
+  exportCard.appendChild(h('p', { class: 'mute-small' }, t('settings.backup_help')));
+  exportCard.appendChild(h('div', { class: 'row' }, [
+    h('button', { onclick: exportEncrypted }, t('settings.backup_enc')),
+    h('button', { onclick: importEncrypted }, t('settings.backup_restore')),
+  ]));
+  exportCard.appendChild(h('div', { class: 'row', style: 'margin-top:8px' }, [
+    h('button', { class: 'ghost', onclick: exportPlaintextConfirm }, t('settings.backup_plain')),
+  ]));
+  root.appendChild(exportCard);
+
+  // Clinician summary
+  const printCard = h('div', { class: 'card' });
+  printCard.appendChild(h('h3', {}, t('settings.print_title')));
+  printCard.appendChild(h('p', { class: 'mute-small' }, t('settings.print_help')));
+  printCard.appendChild(h('button', { onclick: printClinicianSummary }, t('settings.print_btn')));
+  root.appendChild(printCard);
+
+  // Delete all
+  const delCard = h('div', { class: 'card' });
+  delCard.appendChild(h('h3', {}, t('settings.delete_title')));
+  delCard.appendChild(h('p', { class: 'mute-small' }, t('settings.delete_help')));
+  delCard.appendChild(h('button', { class: 'danger', onclick: openDeleteModal }, t('settings.delete_btn')));
+  root.appendChild(delCard);
+
+  // Reference
+  const refCard = h('div', { class: 'card' });
+  refCard.appendChild(h('h3', {}, t('reference.title')));
+  refCard.appendChild(h('p', { class: 'mute-small' }, t('reference.intro')));
+  refCard.appendChild(h('button', { onclick: () => { state.view = 'reference'; render(); } }, t('reference.title')));
+  root.appendChild(refCard);
+
+  // About
+  const aboutCard = h('div', { class: 'card' });
+  aboutCard.appendChild(h('h3', {}, t('settings.about')));
+  aboutCard.appendChild(h('p', { class: 'mute-small' }, t('settings.about_body')));
+  aboutCard.appendChild(h('p', { class: 'mute-small' }, t('settings.disclaimer')));
+  root.appendChild(aboutCard);
+
+  return root;
+}
+
+function renderReference() {
+  const root = h('div');
+  root.appendChild(h('div', { class: 'row between' }, [
+    h('h2', { style: 'margin:0' }, t('reference.title')),
+    h('button', { onclick: () => { state.view = 'settings'; render(); } }, t('day.back')),
+  ]));
+  const card = h('div', { class: 'card' });
+  card.appendChild(h('p', { class: 'mute-small' }, t('reference.intro')));
+  const sections = LOCALES[I18N.current].reference?.sections || LOCALES.en.reference.sections;
+  for (const s of sections) {
+    card.appendChild(h('h3', {}, s.heading));
+    card.appendChild(h('p', {}, s.body));
+  }
+  root.appendChild(card);
+  root.appendChild(h('p', { class: 'disclaimer' }, t('settings.disclaimer')));
+  return root;
+}
+
+function renderToggle(label, value, onchange) {
+  const wrap = h('label', { style: 'display:flex; gap:10px; align-items:center; padding:8px 0; cursor:pointer' });
+  const cb = h('input', { type: 'checkbox' });
+  if (value) cb.setAttribute('checked', '');
+  cb.addEventListener('change', () => onchange(cb.checked));
+  wrap.appendChild(cb);
+  wrap.appendChild(document.createTextNode(label));
+  return wrap;
+}
+
+// ---------------------------------------------------------------------------
+// Modals
+// ---------------------------------------------------------------------------
+function modal(node) {
+  const bd = h('div', { class: 'modal-backdrop', onclick: e => { if (e.target === bd) close(); } });
+  const close = () => bd.remove();
+  const m = h('div', { class: 'modal' });
+  m.appendChild(node(close));
+  bd.appendChild(m);
+  document.body.appendChild(bd);
+}
+
+function openPassphraseModal() {
+  modal(close => {
+    const box = h('div');
+    box.appendChild(h('h2', { style: 'margin-top:0' }, Vault.hasPassphrase ? t('pass_modal.title_change') : t('pass_modal.title_set')));
+    box.appendChild(h('p', { class: 'warn' }, t('pass_modal.warn')));
+    const np = h('input', { type: 'password', placeholder: t('pass_modal.new') });
+    const np2 = h('input', { type: 'password', placeholder: t('pass_modal.confirm'), style: 'margin-top:8px' });
+    const hint = h('input', { type: 'text', placeholder: t('pass_modal.hint'), style: 'margin-top:8px' });
+    box.appendChild(np);
+    box.appendChild(np2);
+    box.appendChild(hint);
+    const err = h('p', { class: 'danger hidden', style: 'margin-top:8px' }, '');
+    box.appendChild(err);
+    const row = h('div', { class: 'row', style: 'margin-top:12px; justify-content: flex-end' }, [
+      h('button', { onclick: close }, t('modal.cancel')),
+      h('button', { class: 'primary', onclick: async () => {
+        if (np.value !== np2.value) { err.textContent = t('pass_modal.err_mismatch'); err.classList.remove('hidden'); return; }
+        if (np.value.length > 0 && np.value.length < 6) { err.textContent = t('pass_modal.err_short'); err.classList.remove('hidden'); return; }
+        await Vault.changePassphrase(np.value, hint.value);
+        Vault.data.settings.passphraseHint = hint.value || null;
+        await save();
+        close();
+        toast(t('pass_modal.updated'));
+        render();
+      }}, t('modal.save')),
+    ]);
+    box.appendChild(row);
+    return box;
+  });
+}
+
+function openDecoyModal(isReset) {
+  modal(close => {
+    const box = h('div');
+    box.appendChild(h('h2', { style: 'margin-top:0' }, isReset ? t('decoy.reset_modal_title') : t('decoy.modal_title')));
+    box.appendChild(h('p', { class: 'warn' }, t('decoy.warning')));
+    const pp = h('input', { type: 'password', placeholder: t('decoy.pass_placeholder') });
+    const pp2 = h('input', { type: 'password', placeholder: t('decoy.confirm_placeholder'), style: 'margin-top:8px' });
+    box.appendChild(pp);
+    box.appendChild(pp2);
+    const err = h('p', { class: 'danger hidden', style: 'margin-top:8px' }, '');
+    box.appendChild(err);
+    box.appendChild(h('div', { class: 'row', style: 'justify-content:flex-end; margin-top:12px' }, [
+      h('button', { onclick: close }, t('modal.cancel')),
+      h('button', { class: 'primary', onclick: async () => {
+        if (pp.value.length < 6) { err.textContent = t('firstrun.err_short'); err.classList.remove('hidden'); return; }
+        if (pp.value !== pp2.value) { err.textContent = t('firstrun.err_mismatch'); err.classList.remove('hidden'); return; }
+        // Reject using the same passphrase as the primary. We can't detect
+        // that directly (we don't store the primary passphrase), but we CAN
+        // try deriving with the primary's salt and checking for decrypt. If
+        // the primary record uses the new candidate, we refuse.
+        const primaryRec = await dbGetKey(Vault.activeSlot);
+        try {
+          const testKey = await CRYPTO.deriveKey(pp.value, primaryRec.salt);
+          await CRYPTO.decrypt(testKey, primaryRec.iv, primaryRec.ciphertext);
+          err.textContent = t('decoy.err_same'); err.classList.remove('hidden');
+          return;
+        } catch (e) {
+          // Expected — means the passphrase does NOT unlock the primary, good.
+        }
+        const decoyData = newData();
+        await Vault.setupDecoy(pp.value, decoyData);
+        await Vault.markDecoyConfigured(true);
+        close();
+        toast(isReset ? t('decoy.reset_done') : t('decoy.created'));
+        render();
+      }}, t('modal.save')),
+    ]));
+    return box;
+  });
+}
+
+function openDeleteModal() {
+  modal(close => {
+    const box = h('div');
+    box.appendChild(h('h2', { style: 'margin-top:0' }, t('delete_modal.title')));
+    box.appendChild(h('p', {}, t('delete_modal.body')));
+    box.appendChild(h('p', { class: 'mute-small' }, t('delete_modal.type_hint')));
+    const inp = h('input', { type: 'text', class: 'confirm-type', placeholder: 'DELETE' });
+    box.appendChild(inp);
+    const row = h('div', { class: 'row', style: 'margin-top:12px; justify-content: flex-end' }, [
+      h('button', { onclick: close }, t('modal.cancel')),
+      h('button', { class: 'danger', onclick: async () => {
+        if (inp.value !== 'DELETE') return;
+        await Vault.wipe();
+        close();
+        location.reload();
+      }}, t('delete_modal.confirm')),
+    ]);
+    box.appendChild(row);
+    return box;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Export / import
+// ---------------------------------------------------------------------------
+async function exportEncrypted() {
+  // Export only the currently-active slot so a user unlocked as the decoy
+  // never accidentally exports the primary vault.
+  const rec = Vault.activeSlot ? await dbGetKey(Vault.activeSlot) : await dbGet();
+  if (!rec) return;
+  // Serialise TypedArrays as base64
+  const toB64 = u8 => btoa(String.fromCharCode(...u8));
+  const payload = {
+    app: 'lunar',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    hasPassphrase: rec.hasPassphrase,
+    hint: rec.hint,
+    salt: toB64(rec.salt),
+    iv: toB64(rec.iv),
+    ciphertext: toB64(rec.ciphertext),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/octet-stream' });
+  downloadBlob(blob, `lunar-backup-${todayYmd()}.lunar`);
+}
+
+function importEncrypted() {
+  const input = h('input', { type: 'file', accept: '.lunar,application/json,application/octet-stream' });
+  input.onchange = async () => {
+    const f = input.files[0]; if (!f) return;
+    try {
+      const text = await f.text();
+      const payload = JSON.parse(text);
+      if (payload.app !== 'lunar') throw new Error('not a Lunar backup');
+      const fromB64 = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
+      const rec = {
+        version: 1,
+        hasPassphrase: !!payload.hasPassphrase,
+        hint: payload.hint || null,
+        salt: fromB64(payload.salt),
+        iv: fromB64(payload.iv),
+        ciphertext: fromB64(payload.ciphertext),
+      };
+      if (!rec.hasPassphrase) {
+        const key = await CRYPTO.deriveKey(CRYPTO.NO_PASS_CONSTANT, rec.salt);
+        try {
+          const plain = await CRYPTO.decrypt(key, rec.iv, rec.ciphertext);
+          JSON.parse(plain);
+          await dbPutKey(Vault.activeSlot || 'slot0', rec);
+          location.reload();
+          return;
+        } catch (e) {
+          toast(t('errors.corrupt_backup'));
+          return;
+        }
+      }
+      modal(close => {
+        const box = h('div');
+        box.appendChild(h('h2', { style: 'margin-top:0' }, t('unlock.restore')));
+        if (rec.hint) box.appendChild(h('p', { class: 'mute-small' }, t('unlock.hint_prefix', { hint: rec.hint })));
+        const pp = h('input', { type: 'password', placeholder: t('unlock.placeholder') });
+        box.appendChild(pp);
+        const err = h('p', { class: 'danger hidden' }, '');
+        box.appendChild(err);
+        box.appendChild(h('div', { class: 'row', style: 'justify-content:flex-end; margin-top:12px' }, [
+          h('button', { onclick: close }, t('modal.cancel')),
+          h('button', { class: 'primary', onclick: async () => {
+            const key = await CRYPTO.deriveKey(pp.value, rec.salt);
+            try {
+              const plain = await CRYPTO.decrypt(key, rec.iv, rec.ciphertext);
+              JSON.parse(plain);
+              await dbPutKey(Vault.activeSlot || 'slot0', rec);
+              close();
+              location.reload();
+            } catch (e) {
+              err.textContent = t('errors.wrong_pass');
+              err.classList.remove('hidden');
+            }
+          }}, t('unlock.btn')),
+        ]));
+        return box;
+      });
+    } catch (e) {
+      toast(t('errors.bad_backup'));
+    }
+  };
+  input.click();
+}
+
+function exportPlaintextConfirm() {
+  modal(close => {
+    const box = h('div');
+    box.appendChild(h('h2', { style: 'margin-top:0' }, t('export.plain_title')));
+    box.appendChild(h('p', {}, t('export.plain_body')));
+    box.appendChild(h('div', { class: 'row', style: 'justify-content:flex-end; margin-top:12px' }, [
+      h('button', { onclick: close }, t('modal.cancel')),
+      h('button', { class: 'danger', onclick: () => {
+        const blob = new Blob([JSON.stringify(Vault.data, null, 2)], { type: 'application/json' });
+        downloadBlob(blob, `lunar-plaintext-${todayYmd()}.json`);
+        close();
+      }}, t('export.plain_btn')),
+    ]));
+    return box;
+  });
+}
+
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ---------------------------------------------------------------------------
+// First-run and unlock
+// ---------------------------------------------------------------------------
+function renderFirstRun() {
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+  const fr = h('div', { class: 'firstrun' });
+  fr.appendChild(h('h1', {}, t('app.title')));
+  fr.appendChild(h('p', { class: 'muted' }, t('app.tagline')));
+
+  const b1 = h('div', { class: 'block' });
+  b1.appendChild(h('h3', {}, t('firstrun.does_title')));
+  b1.appendChild(h('p', {}, t('firstrun.does_body')));
+  fr.appendChild(b1);
+
+  const b2 = h('div', { class: 'block' });
+  b2.appendChild(h('h3', {}, t('firstrun.doesnot_title')));
+  b2.appendChild(h('p', {}, t('firstrun.doesnot_body')));
+  fr.appendChild(b2);
+
+  const b3 = h('div', { class: 'block warn-block' });
+  b3.appendChild(h('h3', {}, t('firstrun.tradeoff_title')));
+  b3.appendChild(h('p', {}, t('firstrun.tradeoff_body')));
+  fr.appendChild(b3);
+
+  const b4 = h('div', { class: 'block' });
+  b4.appendChild(h('h3', {}, t('firstrun.pass_title')));
+  b4.appendChild(h('p', {}, t('firstrun.pass_body')));
+  const pp1 = h('input', { type: 'password', placeholder: t('firstrun.pass_placeholder') });
+  const pp2 = h('input', { type: 'password', placeholder: t('firstrun.pass_confirm'), style: 'margin-top:8px' });
+  const hint = h('input', { type: 'text', placeholder: t('firstrun.pass_hint'), style: 'margin-top:8px' });
+  b4.appendChild(pp1); b4.appendChild(pp2); b4.appendChild(hint);
+  fr.appendChild(b4);
+
+  const b5 = h('div', { class: 'block' });
+  b5.appendChild(h('h3', {}, t('firstrun.notmedical_title')));
+  b5.appendChild(h('p', {}, t('firstrun.notmedical_body')));
+  fr.appendChild(b5);
+
+  const err = h('p', { class: 'danger hidden' }, '');
+  fr.appendChild(err);
+
+  const btnrow = h('div', { class: 'btnrow' });
+  let pendingImport = null;
+
+  btnrow.appendChild(h('button', { class: 'primary', onclick: async () => {
+    if (pp1.value.length < 6) { err.textContent = t('firstrun.err_short'); err.classList.remove('hidden'); return; }
+    if (pp1.value !== pp2.value) { err.textContent = t('firstrun.err_mismatch'); err.classList.remove('hidden'); return; }
+    const data = newData();
+    data.settings.passphraseHint = hint.value || null;
+    data.settings.medicalDisclaimerAcknowledged = true;
+    await Vault.setup(pp1.value, hint.value, data);
+    if (pendingImport) {
+      applyImport(pendingImport.days, false);
+      await save();
+    }
+    state.view = 'today';
+    applyTheme(Vault.data.settings.theme);
+    render();
+  }}, t('firstrun.btn_setpass')));
+  btnrow.appendChild(h('button', { onclick: () => {
+    openImportPicker(result => {
+      pendingImport = result;
+      const note = h('p', { class: 'mute-small', style: 'margin-top:6px' },
+        t('firstrun.import_ready', { n: Object.keys(result.days).length, source: result.source }));
+      b4.appendChild(note);
+    });
+  }}, t('firstrun.btn_import')));
+  btnrow.appendChild(h('button', { onclick: async () => {
+    if (!confirm(t('firstrun.nopass_confirm'))) return;
+    const data = newData();
+    data.settings.medicalDisclaimerAcknowledged = true;
+    await Vault.setup('', null, data);
+    state.view = 'today';
+    applyTheme(Vault.data.settings.theme);
+    render();
+  }}, t('firstrun.btn_nopass')));
+  fr.appendChild(btnrow);
+
+  root.appendChild(fr);
+}
+
+function renderUnlock(errMsg) {
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+  const u = h('div', { class: 'unlock' });
+  u.appendChild(h('h1', {}, t('app.title')));
+  u.appendChild(h('p', { class: 'muted' }, t('unlock.prompt')));
+  const pp = h('input', { type: 'password', placeholder: t('unlock.placeholder'), 'aria-label': t('unlock.placeholder') });
+  u.appendChild(pp);
+
+  dbGet().then(rec => {
+    if (rec?.hint) {
+      const hintEl = h('div', { class: 'hint' }, t('unlock.hint_prefix', { hint: rec.hint }));
+      u.insertBefore(hintEl, pp.nextSibling);
+    }
+  });
+
+  if (errMsg) u.appendChild(h('p', { class: 'danger' }, errMsg));
+  const btn = h('button', { class: 'primary', style: 'width:100%; margin-top:8px' }, t('unlock.btn'));
+  btn.addEventListener('click', async () => {
+    const ok = await Vault.unlock(pp.value);
+    if (ok) { state.view = 'today'; applyTheme(Vault.data.settings.theme); render(); }
+    else renderUnlock(t('unlock.err'));
+  });
+  pp.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
+  u.appendChild(btn);
+
+  const helperRow = h('div', { class: 'row', style: 'margin-top:20px; justify-content:center' });
+  helperRow.appendChild(h('button', { class: 'ghost', onclick: () => {
+    if (confirm(t('unlock.restore_confirm'))) importEncrypted();
+  }}, t('unlock.restore')));
+  u.appendChild(helperRow);
+
+  root.appendChild(u);
+  setTimeout(() => pp.focus(), 0);
+}
+
+// ---------------------------------------------------------------------------
+// Importers — Apple Health XML, Flo JSON, Clue CSV
+// Each returns { days: { ymd: partialDay }, source: "label", warnings: [] }
+// ---------------------------------------------------------------------------
+
+// Normalise to a flow value we understand
+function normaliseFlow(raw) {
+  if (raw == null) return null;
+  const s = String(raw).toLowerCase().trim();
+  if (!s) return null;
+  if (s.includes('none') || s === 'no' || s === '0') return 'none';
+  if (s.includes('spot')) return 'spotting';
+  if (s.includes('unspecified') || s === 'yes' || s === '1') return 'light';
+  if (s.includes('light')) return 'light';
+  if (s.includes('medium') || s.includes('moderate') || s.includes('normal')) return 'medium';
+  if (s.includes('heavy')) return 'heavy';
+  return null;
+}
+
+// Apple Health export.xml: large file. Use regex over the stringified content to avoid
+// DOMParser OOM on 50MB+ exports. We pull only MenstrualFlow + IntermenstrualBleeding records.
+function parseAppleHealth(xmlText) {
+  const days = {};
+  const warnings = [];
+  let flowCount = 0, spotCount = 0;
+
+  // MenstrualFlow records
+  const flowRe = /<Record\b[^>]*type="HKCategoryTypeIdentifierMenstrualFlow"[^>]*\/?>/g;
+  let m;
+  while ((m = flowRe.exec(xmlText)) !== null) {
+    const tag = m[0];
+    const valueMatch = tag.match(/\svalue="([^"]+)"/);
+    const startMatch = tag.match(/\sstartDate="([^"]+)"/);
+    if (!startMatch) continue;
+    const dateStr = parseAppleDate(startMatch[1]);
+    if (!dateStr) continue;
+    const flow = normaliseFlow(valueMatch ? valueMatch[1].replace('HKCategoryValueMenstrualFlow', '') : 'unspecified');
+    if (!flow) continue;
+    days[dateStr] = days[dateStr] || {};
+    // Keep the highest severity on the same day if multiple records exist
+    days[dateStr].flow = mergeFlow(days[dateStr].flow, flow);
+    flowCount++;
+  }
+
+  // IntermenstrualBleeding -> spotting
+  const spotRe = /<Record\b[^>]*type="HKCategoryTypeIdentifierIntermenstrualBleeding"[^>]*\/?>/g;
+  while ((m = spotRe.exec(xmlText)) !== null) {
+    const startMatch = m[0].match(/\sstartDate="([^"]+)"/);
+    if (!startMatch) continue;
+    const dateStr = parseAppleDate(startMatch[1]);
+    if (!dateStr) continue;
+    days[dateStr] = days[dateStr] || {};
+    days[dateStr].flow = mergeFlow(days[dateStr].flow, 'spotting');
+    spotCount++;
+  }
+
+  if (flowCount === 0 && spotCount === 0) {
+    warnings.push('No menstrual flow records found in this file. Confirm you exported from Apple Health as export.xml (unzipped).');
+  }
+  return { days, source: 'Apple Health', warnings, counts: { flow: flowCount, spotting: spotCount } };
+}
+
+// Apple Health dates look like "2024-01-15 07:30:00 -0800". We take the date portion
+// in the file's stated offset — treat as local date of the event.
+function parseAppleDate(s) {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+// Severity ordering for merging flow on the same day
+const FLOW_RANK = { none: 0, spotting: 1, light: 2, medium: 3, heavy: 4 };
+function mergeFlow(existing, incoming) {
+  if (!existing) return incoming;
+  return FLOW_RANK[incoming] > FLOW_RANK[existing] ? incoming : existing;
+}
+
+// Flo JSON: format varies across exports. We accept:
+//   - Array of { date, period | flow | intensity, symptoms, notes, mood }
+//   - { days: [...] } or { data: [...] } wrappers
+//   - Date can be ISO (2024-01-15T...) or YYYY-MM-DD or MM/DD/YYYY
+function parseFlo(jsonText) {
+  const days = {};
+  const warnings = [];
+  let data;
+  try { data = JSON.parse(jsonText); }
+  catch (e) { return { days, source: 'Flo', warnings: ['File is not valid JSON.'], counts: { flow: 0 } }; }
+
+  let rows = data;
+  if (rows && !Array.isArray(rows)) {
+    rows = rows.days || rows.data || rows.entries || rows.records || null;
+  }
+  if (!Array.isArray(rows)) {
+    warnings.push('Could not find a day list in this Flo export. Expected an array of daily records.');
+    return { days, source: 'Flo', warnings, counts: { flow: 0 } };
+  }
+
+  let count = 0;
+  for (const row of rows) {
+    if (!row || typeof row !== 'object') continue;
+    const dateRaw = row.date || row.day || row.logDate || row.startDate;
+    const dateStr = normaliseDate(dateRaw);
+    if (!dateStr) continue;
+    const d = days[dateStr] || {};
+
+    const flow = normaliseFlow(row.period_intensity || row.intensity || row.flow || row.period);
+    if (flow) { d.flow = mergeFlow(d.flow, flow); count++; }
+
+    if (Array.isArray(row.symptoms) && row.symptoms.length) {
+      d.symptoms = [...new Set([...(d.symptoms || []), ...row.symptoms.map(String)])];
+    }
+    if (Array.isArray(row.mood) && row.mood.length) {
+      d.mood = [...new Set([...(d.mood || []), ...row.mood.map(String)])];
+    }
+    if (row.notes && typeof row.notes === 'string') {
+      d.notes = d.notes ? `${d.notes}\n${row.notes}` : row.notes;
+    }
+    days[dateStr] = d;
+  }
+
+  if (count === 0) warnings.push('No period-flow entries recognised in this file.');
+  return { days, source: 'Flo', warnings, counts: { flow: count } };
+}
+
+// Clue CSV: header row, comma-separated, quoted fields allowed.
+function parseClue(csvText) {
+  const days = {};
+  const warnings = [];
+  const rows = parseCsv(csvText);
+  if (rows.length < 2) {
+    return { days, source: 'Clue', warnings: ['File is empty or has no data rows.'], counts: { flow: 0 } };
+  }
+  const header = rows[0].map(s => s.trim().toLowerCase());
+  const col = name => header.indexOf(name);
+  const dayCol = col('day') >= 0 ? col('day') : col('date');
+  const periodCol = col('period');
+  const intensityCol = col('period_intensity') >= 0 ? col('period_intensity') : col('intensity');
+  if (dayCol < 0) {
+    warnings.push('No "day" or "date" column found.');
+    return { days, source: 'Clue', warnings, counts: { flow: 0 } };
+  }
+  let count = 0;
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const dateStr = normaliseDate(row[dayCol]);
+    if (!dateStr) continue;
+    const d = days[dateStr] || {};
+    const intensity = intensityCol >= 0 ? row[intensityCol] : (periodCol >= 0 ? row[periodCol] : null);
+    const flow = normaliseFlow(intensity);
+    if (flow) { d.flow = mergeFlow(d.flow, flow); count++; }
+    days[dateStr] = d;
+  }
+  if (count === 0) warnings.push('No period-flow entries recognised. Confirm this is a Clue CSV export.');
+  return { days, source: 'Clue', warnings, counts: { flow: count } };
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') { /* skip */ }
+      else field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function normaliseDate(raw) {
+  if (raw == null) return null;
+  const s = String(raw).trim();
+  if (!s) return null;
+  // ISO or YYYY-MM-DD
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  // MM/DD/YYYY
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  // DD.MM.YYYY
+  m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  // Unix epoch
+  if (/^\d{10,13}$/.test(s)) {
+    const ms = s.length === 10 ? Number(s) * 1000 : Number(s);
+    const d = new Date(ms);
+    if (!isNaN(d)) return ymd(d);
+  }
+  return null;
+}
+
+// Compute diff between an import result and current Vault.data.days
+function computeImportDiff(incomingDays) {
+  const added = [], merged = [], unchanged = [];
+  for (const [date, partial] of Object.entries(incomingDays)) {
+    const cur = Vault.data.days[date];
+    if (!cur) {
+      if (partial.flow || partial.symptoms?.length || partial.mood?.length || partial.notes) {
+        added.push(date);
+      }
+      continue;
+    }
+    // Conflict checks
+    const curFlow = cur.flow || 'none';
+    const incFlow = partial.flow;
+    if (incFlow && incFlow !== curFlow) merged.push(date);
+    else unchanged.push(date);
+  }
+  return { added, merged, unchanged };
+}
+
+// Apply import. Strategy: merge non-destructively — existing day wins on conflict unless
+// the user chose "overwrite". Flow is merged by severity when not overwriting.
+function applyImport(incomingDays, overwrite) {
+  let changed = 0;
+  for (const [date, partial] of Object.entries(incomingDays)) {
+    const cur = Vault.data.days[date] || blankDay();
+    const next = { ...cur };
+    if (partial.flow) {
+      if (overwrite) next.flow = partial.flow;
+      else next.flow = mergeFlow(next.flow === 'none' ? null : next.flow, partial.flow) || 'none';
+    }
+    if (partial.symptoms?.length) {
+      next.symptoms = [...new Set([...(next.symptoms || []), ...partial.symptoms])];
+    }
+    if (partial.mood?.length) {
+      next.mood = [...new Set([...(next.mood || []), ...partial.mood])];
+    }
+    if (partial.notes) {
+      next.notes = overwrite ? partial.notes : (next.notes ? `${next.notes}\n\n[imported] ${partial.notes}` : partial.notes);
+    }
+    Vault.data.days[date] = next;
+    changed++;
+  }
+  return changed;
+}
+
+// ---------------------------------------------------------------------------
+// Import UI
+// ---------------------------------------------------------------------------
+function openImportPicker(onStarted) {
+  modal(close => {
+    const box = h('div');
+    box.appendChild(h('h2', { style: 'margin-top:0' }, t('import.title')));
+    box.appendChild(h('p', { class: 'mute-small' }, t('import.body')));
+    const opts = [
+      { id: 'apple', label: t('import.apple'), accept: '.xml,text/xml,application/xml', parser: parseAppleHealth },
+      { id: 'flo', label: t('import.flo'), accept: '.json,application/json', parser: parseFlo },
+      { id: 'clue', label: t('import.clue'), accept: '.csv,text/csv', parser: parseClue },
+    ];
+    for (const o of opts) {
+      const btn = h('button', {
+        style: 'width:100%; text-align:left; margin-top:8px',
+        onclick: () => { close(); pickAndParseFile(o, onStarted); },
+      }, o.label);
+      box.appendChild(btn);
+    }
+    const row = h('div', { class: 'row', style: 'justify-content:flex-end; margin-top:14px' }, [
+      h('button', { onclick: close }, t('modal.cancel')),
+    ]);
+    box.appendChild(row);
+    return box;
+  });
+}
+
+function pickAndParseFile(opt, onStarted) {
+  const input = h('input', { type: 'file', accept: opt.accept });
+  input.onchange = async () => {
+    const f = input.files[0]; if (!f) return;
+    toast(t('import.reading', { name: f.name }));
+    try {
+      const text = await f.text();
+      const result = opt.parser(text);
+      showImportPreview(result, onStarted);
+    } catch (e) {
+      toast(t('import.read_fail'));
+    }
+  };
+  input.click();
+}
+
+function showImportPreview(result, onStarted) {
+  modal(close => {
+    const box = h('div');
+    box.appendChild(h('h2', { style: 'margin-top:0' }, t('import.preview_title', { source: result.source })));
+
+    if (result.warnings.length) {
+      for (const w of result.warnings) box.appendChild(h('p', { class: 'warn' }, w));
+    }
+
+    const dayCount = Object.keys(result.days).length;
+    if (dayCount === 0) {
+      box.appendChild(h('p', {}, t('import.nothing')));
+      box.appendChild(h('div', { class: 'row', style: 'justify-content:flex-end; margin-top:12px' }, [
+        h('button', { onclick: close }, t('modal.close')),
+      ]));
+      return box;
+    }
+
+    const diff = Vault.data ? computeImportDiff(result.days) : { added: Object.keys(result.days), merged: [], unchanged: [] };
+
+    box.appendChild(h('div', { class: 'diff-counts' }, [
+      h('span', {}, [h('span', { class: 'k' }, t('import.new_days') + ': '), h('span', { class: 'v' }, String(diff.added.length))]),
+      h('span', {}, [h('span', { class: 'k' }, t('import.merge') + ': '), h('span', { class: 'v' }, String(diff.merged.length))]),
+      h('span', {}, [h('span', { class: 'k' }, t('import.unchanged') + ': '), h('span', { class: 'v' }, String(diff.unchanged.length))]),
+    ]));
+
+    const sample = Object.entries(result.days).slice(0, 6);
+    if (sample.length) {
+      const table = h('table', { class: 'diff-table' });
+      const thead = h('thead', {}, h('tr', {}, [
+        h('th', {}, t('import.cols.date')),
+        h('th', {}, t('import.cols.flow')),
+      ]));
+      table.appendChild(thead);
+      const tbody = h('tbody');
+      for (const [date, d] of sample) {
+        tbody.appendChild(h('tr', {}, [h('td', {}, date), h('td', {}, d.flow || '—')]));
+      }
+      table.appendChild(tbody);
+      box.appendChild(table);
+      if (dayCount > sample.length) box.appendChild(h('p', { class: 'mute-small' }, t('import.more', { n: dayCount - sample.length })));
+    }
+
+    const overwriteLabel = h('label', { style: 'display:flex; gap:8px; align-items:center; margin-top:14px' });
+    const cb = h('input', { type: 'checkbox' });
+    overwriteLabel.appendChild(cb);
+    overwriteLabel.appendChild(document.createTextNode(t('import.overwrite')));
+    box.appendChild(overwriteLabel);
+
+    const row = h('div', { class: 'row', style: 'justify-content:flex-end; margin-top:14px' }, [
+      h('button', { onclick: close }, t('modal.cancel')),
+      h('button', { class: 'primary', onclick: async () => {
+        if (!Vault.data) { close(); onStarted?.(result); return; }
+        const n = applyImport(result.days, cb.checked);
+        await save();
+        close();
+        toast(n === 1 ? t('import.done', { n }) : t('import.done_plural', { n }));
+        render();
+      }}, t('import.btn')),
+    ]);
+    box.appendChild(row);
+    return box;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Printable clinician summary
+// ---------------------------------------------------------------------------
+function renderPrintSummary() {
+  const container = document.getElementById('printRoot');
+  container.innerHTML = '';
+  const cycles = Vault.data.cycles || [];
+  const full = cycles.filter(c => c.lengthDays != null);
+
+  const wrap = h('div');
+  wrap.appendChild(h('h1', {}, t('print.title')));
+  wrap.appendChild(h('div', { class: 'muted' }, new Date().toLocaleString(I18N.current)));
+
+  wrap.appendChild(h('h2', {}, t('stats.summary')));
+  const stats = h('table');
+  const tbody = h('tbody');
+  const addRow = (k, v) => tbody.appendChild(h('tr', {}, [h('td', {}, k), h('td', {}, String(v))]));
+  addRow(t('stats.cycles_recorded'), cycles.length);
+  addRow(t('stats.full_cycles'), full.length);
+  if (full.length) {
+    const lens = full.map(c => c.lengthDays);
+    const mean = lens.reduce((a, b) => a + b, 0) / lens.length;
+    const min = Math.min(...lens), max = Math.max(...lens);
+    addRow(t('stats.avg_cycle'), t('stats.days', { n: mean.toFixed(1) }));
+    addRow(`${t('stats.shortest')} / ${t('stats.longest')}`, t('stats.days', { n: `${min} / ${max}` }));
+    const periodLens = cycles.map(c => c.periodLengthDays).filter(n => n > 0);
+    if (periodLens.length) {
+      const pm = periodLens.reduce((a, b) => a + b, 0) / periodLens.length;
+      addRow(t('stats.avg_period'), t('stats.days', { n: pm.toFixed(1) }));
+    }
+  }
+  const pred = predict(cycles);
+  if (pred) addRow(t('today.prediction'), `${pred.windowStart} – ${pred.windowEnd}`);
+  stats.appendChild(tbody);
+  wrap.appendChild(stats);
+
+  if (cycles.length) {
+    wrap.appendChild(h('h2', {}, t('print.history')));
+    const table = h('table');
+    table.appendChild(h('thead', {}, h('tr', {}, [
+      h('th', {}, 'Start'),
+      h('th', {}, 'End'),
+      h('th', {}, t('stats.cycle_length')),
+      h('th', {}, t('stats.avg_period')),
+    ])));
+    const tb = h('tbody');
+    for (const c of cycles.slice(-12)) {
+      tb.appendChild(h('tr', {}, [
+        h('td', {}, c.startDate),
+        h('td', {}, c.endDate || '—'),
+        h('td', {}, c.lengthDays != null ? String(c.lengthDays) : '—'),
+        h('td', {}, c.periodLengthDays ? String(c.periodLengthDays) : '—'),
+      ]));
+    }
+    table.appendChild(tb);
+    wrap.appendChild(table);
+  }
+
+  const symCount = {};
+  for (const d of Object.values(Vault.data.days)) {
+    for (const s of (d.symptoms || [])) symCount[s] = (symCount[s] || 0) + 1;
+  }
+  const symEntries = Object.entries(symCount).sort((a, b) => b[1] - a[1]).slice(0, 15);
+  if (symEntries.length) {
+    wrap.appendChild(h('h2', {}, t('stats.top_symptoms')));
+    const table = h('table');
+    const tb = h('tbody');
+    for (const [name, count] of symEntries) {
+      tb.appendChild(h('tr', {}, [h('td', {}, name), h('td', {}, count === 1 ? t('stats.days_one', { n: count }) : t('stats.days', { n: count }))]));
+    }
+    table.appendChild(tb);
+    wrap.appendChild(table);
+  }
+
+  wrap.appendChild(h('div', { class: 'disclaimer' }, t('settings.disclaimer')));
+
+  container.appendChild(wrap);
+}
+
+function printClinicianSummary() {
+  renderPrintSummary();
+  // Let layout settle before print
+  requestAnimationFrame(() => {
+    window.print();
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Theme
+// ---------------------------------------------------------------------------
+function applyTheme(theme) {
+  document.body.classList.toggle('theme-hc', theme === 'high-contrast');
+}
+
+// ---------------------------------------------------------------------------
+// Quick-hide — Escape or long-press → blur overlay. Tap to reveal, or require
+// passphrase if the vault has one.
+// ---------------------------------------------------------------------------
+const QuickHide = {
+  overlayEl: null,
+  active: false,
+
+  show() {
+    if (this.active) return;
+    this.active = true;
+    const ov = h('div', { id: 'hideOverlay', role: 'dialog', 'aria-label': t('quickhide.message') });
+    ov.appendChild(h('div', { class: 'badge' }));
+    ov.appendChild(h('div', { class: 'msg' },
+      Vault.hasPassphrase ? t('quickhide.message_locked') : t('quickhide.message')));
+    ov.addEventListener('click', () => this.tryReveal());
+    this.overlayEl = ov;
+    document.body.appendChild(ov);
+  },
+
+  async tryReveal() {
+    if (!Vault.hasPassphrase) { this.hide(); return; }
+    // Lock the vault and require passphrase re-entry
+    Vault.lock();
+    this.hide();
+    renderUnlock();
+  },
+
+  hide() {
+    if (this.overlayEl) this.overlayEl.remove();
+    this.overlayEl = null;
+    this.active = false;
+  },
+
+  bind() {
+    // Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && Vault.data) { this.show(); }
+    });
+    // Long-press (500ms)
+    let pressTimer = null;
+    const start = (e) => {
+      if (!Vault.data || this.active) return;
+      if (e.target.closest('button,input,textarea,select,a,[role="button"],[contenteditable]')) return;
+      pressTimer = setTimeout(() => this.show(), 500);
+    };
+    const cancel = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+    document.addEventListener('touchstart', start, { passive: true });
+    document.addEventListener('touchend', cancel);
+    document.addEventListener('touchmove', cancel);
+    document.addEventListener('mousedown', start);
+    document.addEventListener('mouseup', cancel);
+    document.addEventListener('mouseleave', cancel);
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Reminders — opt-in, same-session only (no background wake, no push server).
+// If Lunar is open in a tab and conditions match, we fire a Notification.
+// Rechecked on every save + on a 30-minute interval while the tab is visible.
+// ---------------------------------------------------------------------------
+const Reminders = {
+  timer: null,
+  firedToday: { logToday: null, periodSoon: null }, // ymd of last fire
+
+  async ensurePermission() {
+    if (!('Notification' in window)) return false;
+    if (Notification.permission === 'granted') return true;
+    if (Notification.permission === 'denied') return false;
+    try { return (await Notification.requestPermission()) === 'granted'; }
+    catch { return false; }
+  },
+
+  schedule() {
+    clearInterval(this.timer);
+    if (!Vault.data) return;
+    const s = Vault.data.settings.reminders || {};
+    if (!s.periodSoon && !s.logToday) return;
+    this.check();
+    this.timer = setInterval(() => this.check(), 30 * 60 * 1000);
+  },
+
+  check() {
+    if (!Vault.data) return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const s = Vault.data.settings.reminders || {};
+    const today = todayYmd();
+
+    // Log today reminder: after 6pm local, if nothing logged for today
+    if (s.logToday && this.firedToday.logToday !== today) {
+      const now = new Date();
+      if (now.getHours() >= 18) {
+        const d = Vault.data.days[today];
+        const empty = !d || (d.flow === 'none' && !d.symptoms?.length && !d.mood?.length && !d.notes);
+        if (empty) {
+          new Notification(t('app.title'), { body: t('settings.reminder_log'), silent: false, tag: 'lunar-log-today' });
+          this.firedToday.logToday = today;
+        }
+      }
+    }
+
+    // Period-soon reminder: if today is within leadDays of predicted window start
+    if (s.periodSoon && this.firedToday.periodSoon !== today) {
+      const pred = predict(Vault.data.cycles || []);
+      if (pred) {
+        const lead = Math.max(0, Number(s.leadDays) || 0);
+        const earliest = ymd(addDays(parseYmd(pred.windowStart), -lead));
+        if (today >= earliest && today <= pred.windowStart) {
+          new Notification(t('app.title'), { body: t('settings.reminder_period'), silent: false, tag: 'lunar-period-soon' });
+          this.firedToday.periodSoon = today;
+        }
+      }
+    }
+  },
+};
+
+async function ensureNotificationPermission() { return Reminders.ensurePermission(); }
+function scheduleReminders() { Reminders.schedule(); }
+
+// ---------------------------------------------------------------------------
+// Network-denial claim
+//
+// The spec requires zero external network calls after first load, enforced by
+// a service worker. A service worker registered from within this single HTML
+// file would need to come from a Blob URL, and blob-URL workers get a scope
+// that only covers the blob itself — they cannot intercept requests made by
+// the hosting page. So a runtime-enforced SW is incompatible with the
+// single-file constraint.
+//
+// Instead, the guarantee is source-level and verifiable:
+//   1. Audit this file. Search for "fetch(" and "new XMLHttpRequest" and
+//      "WebSocket" and "EventSource" and "navigator.sendBeacon". All absent.
+//   2. The only network-capable call is the single favicon data: URL in the
+//      <head>. Data URLs never leave the browser.
+//   3. For deployment to a real origin, a companion /sw.js can be added to
+//      the hosting repo to enforce the same-origin-only rule at runtime.
+//      That file is out-of-band to the app itself.
+//
+// Users can verify by opening devtools → Network tab → using the app. Zero
+// cross-origin requests will appear.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Boot
+// ---------------------------------------------------------------------------
+(async function boot() {
+  I18N.set('en');
+  QuickHide.bind();
+
+  if (!window.crypto?.subtle) {
+    document.getElementById('root').innerHTML =
+      `<div class="app"><div class="card"><h1>${t('app.title')}</h1><p>${t('errors.no_crypto')}</p></div></div>`;
+    return;
+  }
+  const exists = await Vault.exists();
+  if (!exists) {
+    renderFirstRun();
+    return;
+  }
+  const auto = await Vault.tryAutoUnlock();
+  if (auto) {
+    I18N.set(Vault.data.settings.language || 'en');
+    applyTheme(Vault.data.settings.theme);
+    state.view = 'today';
+    render();
+    scheduleReminders();
+  } else {
+    renderUnlock();
+  }
+
+  // Lock on hide — privacy default
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && Vault.hasPassphrase) {
+      clearTimeout(window._lunarLockT);
+      window._lunarLockT = setTimeout(() => {
+        Vault.lock();
+        renderUnlock();
+      }, 5 * 60 * 1000);
+    } else {
+      clearTimeout(window._lunarLockT);
+    }
+  });
+})();
+</script>
+</body>
+</html>
