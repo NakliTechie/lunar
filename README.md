@@ -76,6 +76,12 @@ Why isn't there a service worker enforcing this at runtime? Because a blob-URL s
 
 English only at the moment. The i18n scaffolding is in place — a `LOCALES.en` dictionary with ~180 keys, dotted-key lookup with interpolation, RTL-ready. Adding a language is a single dictionary block and one line in the locale registry. More languages planned.
 
+## Palette
+
+Coloured with **`japan-04 · 桜 SAKURA`** — Hanami picnic, cherry blossom on the breeze. Soft pink-tinged cream body, bengara-red flow shades, Edo-navy ovulation marker. Cycles, blossoms, breath.
+
+Palette pulled from [**Rangrez**](https://github.com/NakliTechie/rangrez), the global colour-palette library that backs all NakliTechie projects.
+
 ## Part of the NakliTechie series
 
 A series of self-contained, single-file web apps that run entirely in the browser. No server, no API keys, no data leaving the device.
